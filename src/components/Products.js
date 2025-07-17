@@ -1,0 +1,860 @@
+import React, { useEffect, useState } from "react";
+import saleImg from "../images/Products/sale.jpg";
+import axios from "axios";
+import { MdEdit } from "react-icons/md";
+import { Tooltip } from "@mui/material";
+import {
+  Box,
+  Grid,
+  Typography,
+  Paper,
+  TextField,
+  MenuItem,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  IconButton,
+  Card,
+  CardMedia,
+  CardContent,
+  Slider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+} from "@mui/material";
+import { FaRegTrashAlt } from "react-icons/fa";
+import { Favorite, FavoriteBorder } from "@mui/icons-material";
+import { useFavorites } from "./FavoritesProvider";
+import ProductDetail from "./ProductDetail";
+import { Alert, Snackbar } from "@mui/material";
+import { useCart } from "./CartProvider";
+
+// ==================== category management =======================
+
+const chunkArray = (arr, size) =>
+  Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+    arr.slice(i * size, i * size + size)
+  );
+
+// =============================================================
+
+const Products = () => {
+  // ======================= product popup ========================
+
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const handleOpenProduct = (product) => setSelectedProduct(product);
+  const handleCloseProduct = () => setSelectedProduct(null);
+
+  // ================= Load products from MongoDB ==================
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:3000/api/products")
+      .then((res) => setProductsData(res.data))
+      .catch((err) => console.error(err));
+  }, []);
+
+  // ====================== edit product popup =========================
+
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editProduct, setEditProduct] = useState(null);
+
+  const openEditDialog = (product) => {
+    setEditProduct(product);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditFieldChange = (field, value) => {
+    setEditProduct((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // ============================== admin ==============================
+
+  const isAdmin = sessionStorage.getItem("isAdmin") === "true";
+
+  // ========================= add product popup =========================
+
+  const [productsData, setProductsData] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:3000/api/products")
+      .then((res) => setProductsData(res.data))
+      .catch((err) => console.error(err));
+  }, []);
+
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    price: "",
+    img: "",
+    category: "",
+    description: "",
+  });
+
+  // ========================= price range ============================
+
+  const [price, setPrice] = useState([0, 50000]);
+
+  const handlePriceChange = (event, newValue) => {
+    setPrice(newValue);
+  };
+
+  // ========================= favorites ============================
+
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("info");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  const { toggleFavorite, isFavorite, message: favMsg } = useFavorites();
+
+  React.useEffect(() => {
+    if (favMsg) {
+      setSnackbarMessage(favMsg);
+      setSnackbarSeverity(favMsg.includes("removed") ? "warning" : "info");
+      setOpenSnackbar(true);
+    }
+  }, [favMsg]);
+
+  // ========================= cart ============================
+
+  const { addToCart, message } = useCart();
+
+  React.useEffect(() => {
+    if (message) {
+      setSnackbarMessage(message);
+      setSnackbarSeverity(message.includes("already") ? "warning" : "success");
+      setOpenSnackbar(true);
+    }
+  }, [message]);
+
+  // ======================= category ========================
+
+  const [category, setCategory] = useState("All");
+
+  const handleCategoryChange = (e) => {
+    setCategory(e.target.value);
+  };
+
+  // ========================= sort ============================
+
+  const [sort, setSort] = useState("");
+
+  const handleSortChange = (e) => {
+    setSort(e.target.value);
+  };
+
+  const sortProducts = productsData.filter((product) => {
+    const numericPrice = parseInt(product.price.replace(/[^\d]/g, ""));
+    const inCategory = category === "All" || product.category === category;
+    const inPriceRange = numericPrice >= price[0] && numericPrice <= price[1];
+    return inCategory && inPriceRange;
+  });
+
+  const sortedProducts = [...sortProducts];
+
+  if (sort === "lowtohigh") {
+    sortedProducts.sort(
+      (a, b) =>
+        parseInt(a.price.replace(/[^\d]/g, "")) -
+        parseInt(b.price.replace(/[^\d]/g, ""))
+    );
+  } else if (sort === "hightolow") {
+    sortedProducts.sort(
+      (a, b) =>
+        parseInt(b.price.replace(/[^\d]/g, "")) -
+        parseInt(a.price.replace(/[^\d]/g, ""))
+    );
+  } else if (sort === "latest") {
+    sortedProducts.reverse();
+  }
+
+  const rows = chunkArray(sortedProducts, 3);
+
+  // =========================================================
+
+  return (
+    <>
+      <Dialog
+        open={isAddDialogOpen}
+        onClose={() => setIsAddDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            background: "#f9f9f9",
+            width: "600px",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontSize: "1.6rem",
+            fontWeight: "bold",
+            textAlign: "center",
+            color: "#333",
+          }}
+        >
+          Add New Product
+        </DialogTitle>
+
+        <DialogContent
+          dividers
+          sx={{
+            px: { xs: 2, sm: 4 },
+            py: 3,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              gap: 4,
+              alignItems: { xs: "center", sm: "flex-start" },
+              justifyContent: "space-between",
+            }}
+          >
+            <Box
+              sx={{
+                flex: 2,
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+              }}
+            >
+              <TextField
+                label="Image URL"
+                value={newProduct.img}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, img: e.target.value })
+                }
+                fullWidth
+                sx={{
+                  backgroundColor: "#fff",
+                  borderRadius: 2,
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+                }}
+              />
+              <TextField
+                label="Product Name"
+                value={newProduct.name}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, name: e.target.value })
+                }
+                fullWidth
+                sx={{
+                  backgroundColor: "#fff",
+                  borderRadius: 2,
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+                }}
+              />
+              <TextField
+                label="Price"
+                value={newProduct.price}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, price: e.target.value })
+                }
+                fullWidth
+                sx={{
+                  backgroundColor: "#fff",
+                  borderRadius: 2,
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+                }}
+              />
+              <FormControl
+                fullWidth
+                sx={{
+                  backgroundColor: "#fff",
+                  borderRadius: 2,
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+                }}
+              >
+                <InputLabel id="category-label">Category</InputLabel>
+                <Select
+                  labelId="category-label"
+                  value={newProduct.category}
+                  label="Category"
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, category: e.target.value })
+                  }
+                >
+                  <MenuItem value="chairs">Chairs</MenuItem>
+                  <MenuItem value="sofas">Sofas</MenuItem>
+                  <MenuItem value="tables">Tables</MenuItem>
+                </Select>
+              </FormControl>
+
+              <TextField
+                label="Description"
+                value={newProduct.description}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, description: e.target.value })
+                }
+                fullWidth
+                multiline
+                rows={3}
+                sx={{
+                  backgroundColor: "#fff",
+                  borderRadius: 2,
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+                }}
+              />
+
+              <Button
+                variant="contained"
+                onClick={() => {
+                  axios
+                    .post("http://localhost:3000/api/products", newProduct)
+                    .then((res) => {
+                      setProductsData([...productsData, res.data]);
+                      setSnackbarMessage("Product added");
+                      setSnackbarSeverity("success");
+                      setOpenSnackbar(true);
+
+                      setNewProduct({
+                        name: "",
+                        price: "",
+                        img: "",
+                        category: "",
+                        description: "",
+                      });
+                      setIsAddDialogOpen(false);
+                    })
+                    .catch((err) => {
+                      console.error("Error saving product:", err);
+                      setSnackbarMessage("Error saving product");
+                      setSnackbarSeverity("error");
+                      setOpenSnackbar(true);
+                    });
+                }}
+                sx={{
+                  mt: 1,
+                  py: 1.2,
+                  fontSize: "15px",
+                  backgroundColor: "#1976d2",
+                  borderRadius: "30px",
+                  textTransform: "none",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  "&:hover": {
+                    backgroundColor: "#115293",
+                    boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
+                  },
+                }}
+              >
+                Add Product
+              </Button>
+            </Box>
+          </Box>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            background: "#f9f9f9",
+            width: "600px",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontSize: "1.6rem",
+            fontWeight: "bold",
+            textAlign: "center",
+            color: "#333",
+          }}
+        >
+          Edit Product
+        </DialogTitle>
+
+        <DialogContent
+          dividers
+          sx={{
+            px: { xs: 2, sm: 4 },
+            py: 3,
+          }}
+        >
+          {editProduct && (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 4,
+                alignItems: { xs: "center", sm: "flex-start" },
+                justifyContent: "space-between",
+              }}
+            >
+              <Box
+                sx={{
+                  flex: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  width: "100%",
+                }}
+              >
+                <TextField
+                  label="Image URL"
+                  value={editProduct.img}
+                  onChange={(e) => handleEditFieldChange("img", e.target.value)}
+                  fullWidth
+                  sx={{
+                    backgroundColor: "#fff",
+                    borderRadius: 2,
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+                  }}
+                />
+
+                <TextField
+                  label="Product Name"
+                  value={editProduct.name}
+                  onChange={(e) =>
+                    handleEditFieldChange("name", e.target.value)
+                  }
+                  fullWidth
+                  sx={{
+                    backgroundColor: "#fff",
+                    borderRadius: 2,
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+                  }}
+                />
+
+                <TextField
+                  label="Price"
+                  value={editProduct.price}
+                  onChange={(e) =>
+                    handleEditFieldChange("price", e.target.value)
+                  }
+                  fullWidth
+                  sx={{
+                    backgroundColor: "#fff",
+                    borderRadius: 2,
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+                  }}
+                />
+
+                <FormControl
+                  fullWidth
+                  sx={{
+                    backgroundColor: "#fff",
+                    borderRadius: 2,
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  <InputLabel id="edit-category-label">Category</InputLabel>
+                  <Select
+                    labelId="edit-category-label"
+                    value={editProduct.category}
+                    label="Category"
+                    onChange={(e) =>
+                      handleEditFieldChange("category", e.target.value)
+                    }
+                  >
+                    <MenuItem value="chairs">Chairs</MenuItem>
+                    <MenuItem value="sofas">Sofas</MenuItem>
+                    <MenuItem value="tables">Tables</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <TextField
+                  label="Description"
+                  value={editProduct.description}
+                  onChange={(e) =>
+                    handleEditFieldChange("description", e.target.value)
+                  }
+                  fullWidth
+                  multiline
+                  rows={3}
+                  sx={{
+                    backgroundColor: "#fff",
+                    borderRadius: 2,
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+                  }}
+                />
+
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    axios
+                      .put(
+                        `http://localhost:3000/api/products/${editProduct._id}`,
+                        editProduct
+                      )
+                      .then((res) => {
+                        setProductsData((prev) =>
+                          prev.map((p) =>
+                            p._id === editProduct._id ? res.data : p
+                          )
+                        );
+                        setSnackbarMessage("Product updated successfully");
+                        setSnackbarSeverity("success");
+                        setOpenSnackbar(true);
+                        setIsEditDialogOpen(false);
+                      })
+                      .catch((err) => {
+                        console.error(err);
+                        setSnackbarMessage("Failed to update product");
+                        setSnackbarSeverity("error");
+                        setOpenSnackbar(true);
+                      });
+                  }}
+                  sx={{
+                    mt: 1,
+                    py: 1.2,
+                    fontSize: "15px",
+                    backgroundColor: "#1976d2",
+                    borderRadius: "30px",
+                    textTransform: "none",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    "&:hover": {
+                      backgroundColor: "#115293",
+                      boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
+                    },
+                  }}
+                >
+                  Save Changes
+                </Button>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Box
+        id="products"
+        sx={{
+          position: "relative",
+          paddingTop: "90px",
+          height: "auto",
+        }}
+      >
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={2000}
+          onClose={() => setOpenSnackbar(false)}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <Alert
+            onClose={() => setOpenSnackbar(false)}
+            severity={snackbarSeverity}
+            sx={{ width: "100%" }}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          mb={5}
+          sx={{
+            textAlign: "center",
+            fontSize: "45px",
+          }}
+        >
+          All Products
+        </Typography>
+        {isAdmin && (
+          <Button
+            variant="outlined"
+            onClick={() => setIsAddDialogOpen(true)}
+            sx={{
+              position: "absolute",
+              top: "100px",
+              right: "20px",
+              transition: ".3s",
+              fontWeight: "bold",
+            }}
+          >
+            + Add Item
+          </Button>
+        )}
+        <Grid container spacing={3} mb={4}>
+          <Grid item xs={12} md={3} width={"49%"}>
+            <Paper
+              sx={{
+                p: 3,
+                height: { xs: "300px", md: "400px" },
+              }}
+            >
+              <Typography variant="h4" mb={3}>
+                Filters
+              </Typography>
+              <TextField
+                fullWidth
+                label="Category"
+                select
+                value={category}
+                onChange={handleCategoryChange}
+                sx={{ marginTop: "10px" }}
+              >
+                <MenuItem value="All">All</MenuItem>
+                <MenuItem value="chairs">Chairs</MenuItem>
+                <MenuItem value="sofas">Sofas</MenuItem>
+                <MenuItem value="tables">Tables</MenuItem>
+              </TextField>
+              <TextField
+                fullWidth
+                label="Sort By"
+                select
+                value={sort}
+                onChange={handleSortChange}
+                sx={{ marginTop: "30px" }}
+              >
+                <MenuItem value="All">All</MenuItem>
+                <MenuItem value="latest">Latest</MenuItem>
+                <MenuItem value="popular">Popular</MenuItem>
+                <MenuItem value="lowtohigh">Price: Low to High</MenuItem>
+                <MenuItem value="hightolow">Price: High to Low</MenuItem>
+              </TextField>
+              <Typography sx={{ mt: 5 }} gutterBottom>
+                Price Range (₹{price[0]} – ₹{price[1]})
+              </Typography>
+              <Slider
+                value={price}
+                onChange={handlePriceChange}
+                valueLabelDisplay="auto"
+                min={0}
+                max={100000}
+                step={500}
+              />
+            </Paper>
+          </Grid>
+
+          <Grid
+            item
+            xs={12}
+            md={9}
+            width={"49%"}
+            sx={{
+              borderRadius: "20px",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                backgroundImage: `url(${saleImg})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                height: { xs: "300px", md: "400px" },
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                px: { xs: 2, md: 10 },
+                color: "white",
+                position: "relative",
+              }}
+            >
+              <Box
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  zIndex: 1,
+                }}
+              />
+
+              <Box sx={{ zIndex: 2 }}>
+                <Typography variant="h4" fontWeight="bold">
+                  Big Furniture Sale!
+                </Typography>
+                <Typography variant="h6" sx={{ my: 1 }}>
+                  Up to 50% Off on Living Room & Bedroom Items
+                </Typography>
+                <Button variant="contained" color="warning" sx={{ mt: 1 }}>
+                  Shop Now
+                </Button>
+              </Box>
+            </Box>
+          </Grid>
+        </Grid>
+        <Box sx={{ width: "100%", p: 3 }}>
+          {rows.map((row, rowIndex) => (
+            <Box
+              key={rowIndex}
+              sx={{ display: "flex", gap: 3, mb: 3, flexWrap: "wrap" }}
+            >
+              {row.map((product, colIndex) => (
+                <Box
+                  key={colIndex}
+                  onClick={() => handleOpenProduct(product)}
+                  sx={{
+                    cursor: "pointer",
+                    width: "472.8px",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Card
+                    sx={{
+                      borderRadius: 3,
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.16)",
+                      border: "1px solid #ccc",
+                    }}
+                  >
+                    <CardMedia
+                      component="img"
+                      image={product.img}
+                      alt={product.name}
+                      sx={{
+                        height: "370px",
+                        width: "100%",
+                        objectFit: "cover",
+                        minHeight: "370px",
+                        borderTopLeftRadius: 12,
+                        borderTopRightRadius: 12,
+                      }}
+                    />
+
+                    <CardContent
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        height: "100%",
+                      }}
+                    >
+                      <Typography variant="h6">{product.name}</Typography>
+                      <Typography color="text.secondary" sx={{ mb: 1 }}>
+                        ₹{Number(product.price).toLocaleString("en-IN")}
+                      </Typography>
+
+                      <Box
+                        sx={{
+                          mt: "auto",
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const userEmail = sessionStorage.getItem("email");
+                            if (userEmail) {
+                              addToCart(product);
+                            } else {
+                              setSnackbarMessage(
+                                "Please log in to add items to your cart"
+                              );
+                              setSnackbarSeverity("warning");
+                              setOpenSnackbar(true);
+                            }
+                          }}
+                        >
+                          Add to Cart
+                        </Button>
+                        <Box>
+                          {isAdmin && (
+                            <>
+                              <Tooltip title="Remove">
+                                <IconButton
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    axios
+                                      .delete(
+                                        `http://localhost:3000/api/products/${product._id}`
+                                      )
+                                      .then(() => {
+                                        setProductsData((prev) =>
+                                          prev.filter(
+                                            (p) => p._id !== product._id
+                                          )
+                                        );
+                                        setSnackbarMessage(
+                                          "Product deleted successfully"
+                                        );
+                                        setSnackbarSeverity("success");
+                                        setOpenSnackbar(true);
+                                      })
+                                      .catch(() => {
+                                        setSnackbarMessage(
+                                          "Failed to delete product"
+                                        );
+                                        setSnackbarSeverity("error");
+                                        setOpenSnackbar(true);
+                                      });
+                                  }}
+                                  sx={{
+                                    marginRight: "10px",
+                                    color: "#f44336",
+                                    fontSize: "20px",
+                                  }}
+                                >
+                                  <FaRegTrashAlt />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Edit">
+                                <IconButton
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openEditDialog(product);
+                                  }}
+                                  sx={{
+                                    marginRight: "10px",
+                                    color: "#000",
+                                    fontSize: "23px",
+                                  }}
+                                >
+                                  <MdEdit />
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          )}
+                          <Tooltip
+                            title={
+                              isFavorite(product)
+                                ? "Remove from favorites"
+                                : "Add to favorites"
+                            }
+                          >
+                            <IconButton
+                              color={isFavorite(product) ? "error" : "default"}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleFavorite(product);
+                              }}
+                            >
+                              {isFavorite(product) ? (
+                                <Favorite />
+                              ) : (
+                                <FavoriteBorder />
+                              )}
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Box>
+              ))}
+            </Box>
+          ))}
+        </Box>
+        <ProductDetail
+          open={Boolean(selectedProduct)}
+          onClose={handleCloseProduct}
+          product={selectedProduct}
+          onAddToCart={addToCart}
+          onToggleFavorite={toggleFavorite}
+          isFavorite={isFavorite}
+        />
+      </Box>
+    </>
+  );
+};
+
+export default Products;
