@@ -37,7 +37,7 @@ const ContactUs = () => {
         <Typography
           variant="h3"
           fontWeight="bold"
-          sx={{ fontSize: { xs: "28px", sm: "36px", md: "48px" } ,p:0}}
+          sx={{ fontSize: { xs: "28px", sm: "36px", md: "48px" }, p: 0 }}
         >
           Get in Touch with Us
         </Typography>

@@ -9,8 +9,6 @@ import {
   Menu,
   MenuItem,
   Dialog,
-  DialogTitle,
-  DialogContent,
   TextField,
   Avatar,
   Badge,
@@ -680,6 +678,20 @@ const Navbar = () => {
                       </ListItem>
                     )}
 
+                    {/* Admin-specific options */}
+                    {email && sessionStorage.getItem("isAdmin") === "true" && (
+                      <ListItem
+                        button
+                        onClick={() => {
+                          setDrawerOpen(false);
+                          navigate("/orders");
+                        }}
+                      >
+                        <ListItemText primary="Orders" />
+                      </ListItem>
+                    )}
+
+                    {/* Non-admin user options */}
                     {email && sessionStorage.getItem("isAdmin") !== "true" && (
                       <>
                         <ListItem
@@ -838,6 +850,17 @@ const Navbar = () => {
                 >
                   My account
                 </MenuItem>
+
+                {email && sessionStorage.getItem("isAdmin") === "true" && (
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseMenu();
+                      navigate("/orders");
+                    }}
+                  >
+                    Orders
+                  </MenuItem>
+                )}
 
                 {!email && (
                   <MenuItem

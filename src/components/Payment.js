@@ -18,28 +18,38 @@ import {
   FormControl,
 } from "@mui/material";
 import Swal from "sweetalert2";
+import axios from "axios";
 import { useCart } from "./CartProvider";
 import { useNavigate } from "react-router-dom";
 
 const Payment = () => {
-  // const { cartItems } = useCart();
   const { cartItems, clearCart } = useCart();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState("gpay");
+
+  const banks = [
+    "State Bank of India",
+    "HDFC Bank",
+    "ICICI Bank",
+    "Axis Bank",
+    "Punjab National Bank",
+    "Bank of Baroda",
+    "Kotak Mahindra Bank",
+    "Canara Bank",
+    "Union Bank of India",
+    "IndusInd Bank",
+  ];
 
   const [cardDetails, setCardDetails] = useState({
     number: "",
     expiry: "",
     cvv: "",
   });
-
   const [upiId, setUpiId] = useState("");
-
   const [netBanking, setNetBanking] = useState({
     bankName: "",
     accountNumber: "",
   });
-
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState("");
 
@@ -60,20 +70,28 @@ const Payment = () => {
     setPaymentMethod("gpay");
   }, []);
 
+  const getNumericPrice = (item) => {
+    if (typeof item.price === "number") return item.price;
+    if (typeof item.price === "string") {
+      const n = parseFloat(item.price.replace(/[^\d.]/g, ""));
+      return isNaN(n) ? 0 : n;
+    }
+    return 0;
+  };
+
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + getNumericPrice(item) * (item.quantity || 1),
     0
   );
 
   const discount = subtotal * 0.1;
   const shipping = subtotal > 2000 ? 0 : 100;
-
   const cgst = (subtotal - discount) * 0.09;
   const sgst = (subtotal - discount) * 0.09;
   const igst = 0;
   const total = subtotal - discount + cgst + sgst + igst + shipping;
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!selectedAddress) {
       Swal.fire(
         "Select Address",
@@ -83,78 +101,74 @@ const Payment = () => {
       return;
     }
 
-    if (paymentMethod === "gpay") {
-      if (!upiId) {
-        Swal.fire("Missing Details", "Please enter your UPI ID.", "error");
-        return;
-      }
-      Swal.fire("Redirecting to GPay...", `UPI ID: ${upiId}`, "info").then(
-        () => {
-          successAlert();
-        }
+    if (paymentMethod === "gpay" && !upiId) {
+      Swal.fire("Missing Details", "Please enter your UPI ID.", "error");
+      return;
+    }
+
+    if (
+      paymentMethod === "netbanking" &&
+      (!netBanking.bankName || !netBanking.accountNumber)
+    ) {
+      Swal.fire("Missing Details", "Please enter bank details.", "error");
+      return;
+    }
+
+    if (
+      paymentMethod === "card" &&
+      (!cardDetails.number || !cardDetails.expiry || !cardDetails.cvv)
+    ) {
+      Swal.fire("Missing Details", "Please enter all card details.", "error");
+      return;
+    }
+
+    const userEmail = sessionStorage.getItem("email");
+    if (!userEmail) {
+      Swal.fire("Not Logged In", "Please login to place an order.", "error");
+      return;
+    }
+
+    const newOrder = {
+      userEmail,
+      items: cartItems.map((item) => ({
+        productId: item._id || null,
+        name: item.name,
+        price: getNumericPrice(item),
+        quantity: item.quantity || 1,
+        image: item.image || item.img || "",
+      })),
+      total: Number(total.toFixed(2)),
+      address: selectedAddress,
+      paymentMethod,
+      status: "Pending",
+    };
+
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/orders",
+        newOrder
       );
-    } else if (paymentMethod === "netbanking") {
-      if (!netBanking.bankName || !netBanking.accountNumber) {
-        Swal.fire("Missing Details", "Please enter bank details.", "error");
-        return;
-      }
-      Swal.fire(
-        "Redirecting to Net Banking...",
-        `Bank: ${netBanking.bankName}`,
-        "info"
-      ).then(() => {
-        successAlert();
+
+      const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]");
+      existingOrders.push(response.data);
+      localStorage.setItem("orders", JSON.stringify(existingOrders));
+
+      Swal.fire({
+        title: "Order Placed!",
+        text: `Your order of ₹${total.toFixed(
+          2
+        )} has been placed successfully.\n\nDelivery Address:\n${selectedAddress}`,
+        icon: "success",
+        confirmButtonText: "OK",
+      }).then(() => {
+        clearCart();
+        navigate("/");
       });
-    } else if (paymentMethod === "card") {
-      if (!cardDetails.number || !cardDetails.expiry || !cardDetails.cvv) {
-        Swal.fire("Missing Details", "Please enter all card details.", "error");
-        return;
-      }
-      Swal.fire("Processing Card Payment...", "Please wait...", "info").then(
-        () => {
-          successAlert();
-        }
-      );
-    } else if (paymentMethod === "cod") {
-      Swal.fire(
-        "Cash on Delivery Selected",
-        "You will pay at the time of delivery.",
-        "info"
-      ).then(() => {
-        successAlert();
-      });
+    } catch (err) {
+      console.error("Order API error:", err);
+      Swal.fire("Error", "Failed to place order. Please try again.", "error");
     }
   };
-
-  const successAlert = () => {
-    Swal.fire({
-      title: "Order Placed!",
-      text: `Your order of ₹${total.toFixed(
-        2
-      )} has been placed successfully.\n\nDelivery Address:\n${selectedAddress}`,
-      icon: "success",
-      confirmButtonText: "OK",
-    }).then((res) => {
-      if (res.isConfirmed) {
-        clearCart();
-        window.location.href = "/";
-      }
-    });
-  };
-
-  // ✅ List of banks
-  const banks = [
-    "State Bank of India",
-    "HDFC Bank",
-    "ICICI Bank",
-    "Axis Bank",
-    "Punjab National Bank",
-    "Bank of Baroda",
-    "Canara Bank",
-    "Union Bank of India",
-    "Kotak Mahindra Bank",
-    "Yes Bank",
-  ];
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, gap: 3 }}>
@@ -371,18 +385,8 @@ const Payment = () => {
       </Box>
 
       {/* Order Summary */}
-      <Card
-        sx={{
-          p: 3,
-          boxShadow: 4,
-          borderRadius: 3,
-          bgcolor: "#fafafa",
-          mt: 3,
-        }}
-      >
-        <Typography variant="h5" gutterBottom fontWeight="bold">
-          Order Summary
-        </Typography>
+      <Card sx={{ p: 3, boxShadow: 4, borderRadius: 3, bgcolor: "#fafafa", mt: 3 }}>
+        <Typography variant="h5" gutterBottom fontWeight="bold">Order Summary</Typography>
         <Divider sx={{ mb: 2 }} />
 
         {cartItems.length === 0 ? (
@@ -391,46 +395,20 @@ const Payment = () => {
           <>
             <List sx={{ maxHeight: 250, overflowY: "auto", mb: 2 }}>
               {cartItems.map((item, idx) => (
-                <ListItem
-                  key={idx}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    mb: 1,
-                    borderBottom: "1px solid #eee",
-                    pb: 1,
-                  }}
-                >
-                  {item.image && (
-                    <Box
-                      component="img"
-                      src={item.image}
-                      alt={item.name}
-                      sx={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: 1,
-                        mr: 2,
-                        objectFit: "cover",
-                      }}
-                    />
+                <ListItem key={idx} sx={{ display: "flex", alignItems: "center", mb: 1, borderBottom: "1px solid #eee", pb: 1 }}>
+                  {(item.image || item.img) && (
+                    <Box component="img" src={item.image || item.img} alt={item.name} sx={{ width: 60, height: 60, borderRadius: 1, mr: 2, objectFit: "cover" }} />
                   )}
 
                   <ListItemText
                     primary={item.name}
-                    secondary={`Qty: ${item.quantity}`}
+                    secondary={`Qty: ${item.quantity || 1}`}
                     primaryTypographyProps={{ fontWeight: "500", fontSize: 15 }}
-                    secondaryTypographyProps={{
-                      fontSize: 13,
-                      color: "text.secondary",
-                    }}
+                    secondaryTypographyProps={{ fontSize: 13, color: "text.secondary" }}
                   />
 
-                  <Typography
-                    fontWeight="bold"
-                    sx={{ minWidth: 70, textAlign: "right" }}
-                  >
-                    ₹{(item.price * item.quantity).toFixed(2)}
+                  <Typography fontWeight="bold" sx={{ minWidth: 70, textAlign: "right" }}>
+                    ₹{(getNumericPrice(item) * (item.quantity || 1)).toFixed(2)}
                   </Typography>
                 </ListItem>
               ))}

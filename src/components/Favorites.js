@@ -41,7 +41,7 @@ const Favorites = () => {
           variant="h6"
           color="text.secondary"
           sx={{
-            fontSize: { xs: "0.5rem", md: "1rem" },
+            fontSize: { xs: "0.7rem", md: "1rem" },
             textAlign: { xs: "center", md: "left" },
           }}
         >

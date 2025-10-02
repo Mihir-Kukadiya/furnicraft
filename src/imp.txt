@@ -11,4 +11,6 @@ mongodb+srv://<username>:<password>@<cluster-url>/<database>?retryWrites=true&w=
 
 ================ future fixes =================
 
-1. when user checkout then that order is showing to admin.
+1. remove all comments from all files.
+2. adjust code.
+3. check website is working properly in responsive also.

@@ -148,7 +148,7 @@ const Products = () => {
   };
 
   const sortProducts = productsData.filter((product) => {
-    const numericPrice = parseInt(product.price.replace(/[^\d]/g, ""));
+    const numericPrice = parseInt(String(product.price).replace(/[^\d]/g, ""));
     const inCategory = category === "All" || product.category === category;
     const inPriceRange = numericPrice >= price[0] && numericPrice <= price[1];
     return inCategory && inPriceRange;
@@ -159,17 +159,15 @@ const Products = () => {
   if (sort === "lowtohigh") {
     sortedProducts.sort(
       (a, b) =>
-        parseInt(a.price.replace(/[^\d]/g, "")) -
-        parseInt(b.price.replace(/[^\d]/g, ""))
+        parseInt(String(a.price).replace(/[^\d]/g, "")) -
+        parseInt(String(b.price).replace(/[^\d]/g, ""))
     );
   } else if (sort === "hightolow") {
     sortedProducts.sort(
       (a, b) =>
-        parseInt(b.price.replace(/[^\d]/g, "")) -
-        parseInt(a.price.replace(/[^\d]/g, ""))
+        parseInt(String(b.price).replace(/[^\d]/g, "")) -
+        parseInt(String(a.price).replace(/[^\d]/g, ""))
     );
-  } else if (sort === "latest") {
-    sortedProducts.reverse();
   }
 
   const rows = chunkArray(sortedProducts, 3);

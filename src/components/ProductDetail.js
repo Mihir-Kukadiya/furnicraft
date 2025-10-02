@@ -160,10 +160,7 @@ const ProductDetail = ({
                 {product.name}
               </DialogTitle>
               <Typography variant="h6" gutterBottom sx={{ pt: "10px" }}>
-                Price: ₹
-                {parseInt(product.price.replace(/[^\d]/g, "")).toLocaleString(
-                  "en-IN"
-                )}
+                Price: ₹{Number(product.price).toLocaleString("en-IN")}
               </Typography>
 
               <Typography

@@ -15,6 +15,7 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import Address from "./components/Address";
 import Payment from "./components/Payment";
+import Orders from "./components/Orders";
 
 const App = () => {
   return (
@@ -42,6 +43,7 @@ const App = () => {
             <Route path="/payment" element={<Payment />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/orders" element={<Orders />} />
           </Routes>
         </BrowserRouter>
       </FavoritesProvider>

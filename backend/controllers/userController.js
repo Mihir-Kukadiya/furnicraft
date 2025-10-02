@@ -88,7 +88,6 @@ export const changePassword = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Trim both DB value and user input and compare in lowercase
     const dbAnswer = (user.securityAnswer || "").trim().toLowerCase();
     const userAnswer = (securityAnswer || "").trim().toLowerCase();
 
