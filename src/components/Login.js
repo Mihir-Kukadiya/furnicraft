@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogContent,
   Alert,
+  Snackbar,
 } from "@mui/material";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -34,6 +35,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = () => {
@@ -46,6 +48,7 @@ const Login = () => {
 
     if (validationError) {
       setError(validationError.details[0].message);
+      setShowErrorPopup(true);
       return;
     }
 
@@ -67,6 +70,7 @@ const Login = () => {
         const msg =
           err.response?.data?.message || "Login failed. Please try again.";
         setError(msg);
+        setShowErrorPopup(true);
       });
   };
 
@@ -161,20 +165,20 @@ const Login = () => {
           Login
         </Typography>
 
-        {error && (
-          <Box
-            sx={{
-              backgroundColor: "#f8d7da",
-              color: "#721c24",
-              padding: "10px",
-              borderRadius: "8px",
-              textAlign: "center",
-              fontSize: "14px",
-            }}
+        <Snackbar
+          open={showErrorPopup}
+          autoHideDuration={3000}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          onClose={() => setShowErrorPopup(false)}
+        >
+          <Alert
+            onClose={() => setShowErrorPopup(false)}
+            severity="error"
+            sx={{ width: "100%" }}
           >
             {error}
-          </Box>
-        )}
+          </Alert>
+        </Snackbar>
 
         <Box>
           <Typography sx={{ fontWeight: 600, mb: 1 }}>Email</Typography>

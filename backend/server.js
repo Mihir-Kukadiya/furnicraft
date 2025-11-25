@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import productRoutes from "./routes/productRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
-import favoriteRoutes from "./routes/favoritesRoute.js";
 
 dotenv.config();
 
@@ -21,7 +20,6 @@ mongoose
 app.use("/api/products", productRoutes);
 app.use("/api/auth", userRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/favorites", favoriteRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

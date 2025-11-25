@@ -13,8 +13,6 @@ import {
   Alert,
 } from "@mui/material";
 import { Favorite, FavoriteBorder } from "@mui/icons-material";
-
-// ⭐ New zoom library (React19 supported)
 import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
 
@@ -103,7 +101,6 @@ const ProductDetail = ({
             gap={4}
             flexDirection={{ xs: "column", md: "row" }}
           >
-            {/* ===================== IMAGE + ZOOM ===================== */}
             <Box
               sx={{
                 width: { xs: "100%", md: "550px" },
@@ -127,7 +124,6 @@ const ProductDetail = ({
               </Zoom>
             </Box>
 
-            {/* ===================== DETAILS ===================== */}
             <Box flex={1} position="relative">
               <IconButton
                 onClick={handleToggleFavorite}

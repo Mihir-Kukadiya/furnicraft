@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   TextField,
   Typography,
   Button,
+  Snackbar,
+  Alert,
   MenuItem,
   Select,
   FormControl,
@@ -76,7 +78,17 @@ const Register = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // =================== Auto scroll to top when error appears ===================
+
+  useEffect(() => {
+    if (error) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [error]);
+
   // ========================= submit form ============================
+
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
 
   const handleSubmit = () => {
     setError("");
@@ -96,6 +108,8 @@ const Register = () => {
 
     if (validationError) {
       setError(validationError.details[0].message);
+      setShowErrorPopup(true);
+
       return;
     }
 
@@ -125,6 +139,7 @@ const Register = () => {
           setError("This email is already registered.");
         } else {
           setError("Registration failed. Please try again.");
+          setShowErrorPopup(true);
         }
       });
   };
@@ -141,217 +156,222 @@ const Register = () => {
   // ==============================================================
 
   return (
-    <Box
-      sx={{
-        marginTop: "100px",
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 2,
-      }}
-    >
+    <>
       <Box
         sx={{
-          width: 500,
-          backgroundColor: "#fff",
-          border: "2px solid #000",
-          borderRadius: "10px",
-          padding: 4,
+          marginTop: "100px",
+          minHeight: "100vh",
           display: "flex",
-          flexDirection: "column",
-          gap: 2,
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 2,
         }}
       >
-        <Typography variant="h5" sx={{ textAlign: "center", fontWeight: 600 }}>
-          Register
-        </Typography>
-
-        {error && (
-          <Box
-            sx={{
-              backgroundColor: "#f8d7da",
-              color: "#721c24",
-              padding: "10px",
-              borderRadius: "8px",
-              textAlign: "center",
-              fontSize: "14px",
-            }}
+        <Box
+          sx={{
+            width: 500,
+            backgroundColor: "#fff",
+            border: "2px solid #000",
+            borderRadius: "10px",
+            padding: 4,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          <Typography
+            variant="h5"
+            sx={{ textAlign: "center", fontWeight: 600 }}
           >
-            {error}
-          </Box>
-        )}
-
-        <Box>
-          <Typography sx={{ fontWeight: 600, mb: 1 }}>First Name</Typography>
-          <TextField
-            fullWidth
-            placeholder="Enter your first name"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            InputProps={{
-              sx: { borderRadius: "10px", height: "50px" },
-            }}
-          />
-        </Box>
-
-        <Box>
-          <Typography sx={{ fontWeight: 600, mb: 1 }}>Last Name</Typography>
-          <TextField
-            fullWidth
-            placeholder="Enter your last name"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            InputProps={{
-              sx: { borderRadius: "10px", height: "50px" },
-            }}
-          />
-        </Box>
-
-        <Box>
-          <Typography sx={{ fontWeight: 600, mb: 1 }}>Email</Typography>
-          <TextField
-            fullWidth
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            InputProps={{
-              sx: { borderRadius: "10px", height: "50px" },
-            }}
-          />
-        </Box>
-
-        <Box sx={{ position: "relative" }}>
-          <Typography sx={{ fontWeight: 600, mb: 1 }}>Password</Typography>
-          <TextField
-            type={showPassword ? "text" : "password"}
-            fullWidth
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            InputProps={{
-              sx: { borderRadius: "10px", height: "50px" },
-            }}
-          />
-          <Box
-            onClick={handlePasswordClick}
-            sx={{
-              position: "absolute",
-              fontSize: "20px",
-              right: "10px",
-              top: "42px",
-              cursor: "pointer",
-              color: "#333",
-            }}
-          >
-            {showPassword ? <FaEye /> : <FaEyeSlash />}
-          </Box>
-        </Box>
-
-        <Box sx={{ position: "relative" }}>
-          <Typography sx={{ fontWeight: 600, mb: 1 }}>
-            Confirm Password
+            Register
           </Typography>
-          <TextField
-            type={showConfirmPassword ? "text" : "password"}
-            fullWidth
-            placeholder="Re-enter your password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            InputProps={{
-              sx: { borderRadius: "10px", height: "50px" },
-            }}
-          />
-          <Box
-            onClick={handleConfirmPasswordClick}
-            sx={{
-              position: "absolute",
-              fontSize: "20px",
-              right: "10px",
-              top: "42px",
-              cursor: "pointer",
-              color: "#333",
-            }}
-          >
-            {showConfirmPassword ? <FaEye /> : <FaEyeSlash />}
-          </Box>
-        </Box>
 
-        <Box>
-          <Typography sx={{ fontWeight: 600, mb: 1 }}>
-            Security Question
-          </Typography>
-          <FormControl fullWidth variant="outlined">
-            <InputLabel id="security-question-label">
-              Select Security Question
-            </InputLabel>
-            <Select
-              labelId="security-question-label"
-              value={securityQuestion}
-              onChange={(e) => setSecurityQuestion(e.target.value)}
-              label="Select Security Question"
-              sx={{ borderRadius: "10px", height: "50px" }}
+          <Snackbar
+            open={showErrorPopup}
+            autoHideDuration={3000}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            onClose={() => setShowErrorPopup(false)}
+          >
+            <Alert
+              onClose={() => setShowErrorPopup(false)}
+              severity="error"
+              sx={{ width: "100%" }}
             >
-              <MenuItem value="favoriteColor">
-                What is your favorite color?
-              </MenuItem>
-              <MenuItem value="favoriteGame">
-                What is your favorite game?
-              </MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
+              {error}
+            </Alert>
+          </Snackbar>
 
-        <Box>
-          <Typography sx={{ fontWeight: 600, mb: 1 }}>
-            Answer (For Security Question)
-          </Typography>
-          <TextField
-            fullWidth
-            placeholder="Enter your answer"
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            InputProps={{
-              sx: { borderRadius: "10px", height: "50px" },
+          <Box>
+            <Typography sx={{ fontWeight: 600, mb: 1 }}>First Name</Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter your first name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              InputProps={{
+                sx: { borderRadius: "10px", height: "50px" },
+              }}
+            />
+          </Box>
+
+          <Box>
+            <Typography sx={{ fontWeight: 600, mb: 1 }}>Last Name</Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter your last name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              InputProps={{
+                sx: { borderRadius: "10px", height: "50px" },
+              }}
+            />
+          </Box>
+
+          <Box>
+            <Typography sx={{ fontWeight: 600, mb: 1 }}>Email</Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              InputProps={{
+                sx: { borderRadius: "10px", height: "50px" },
+              }}
+            />
+          </Box>
+
+          <Box sx={{ position: "relative" }}>
+            <Typography sx={{ fontWeight: 600, mb: 1 }}>Password</Typography>
+            <TextField
+              type={showPassword ? "text" : "password"}
+              fullWidth
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              InputProps={{
+                sx: { borderRadius: "10px", height: "50px" },
+              }}
+            />
+            <Box
+              onClick={handlePasswordClick}
+              sx={{
+                position: "absolute",
+                fontSize: "20px",
+                right: "10px",
+                top: "42px",
+                cursor: "pointer",
+                color: "#333",
+              }}
+            >
+              {showPassword ? <FaEye /> : <FaEyeSlash />}
+            </Box>
+          </Box>
+
+          <Box sx={{ position: "relative" }}>
+            <Typography sx={{ fontWeight: 600, mb: 1 }}>
+              Confirm Password
+            </Typography>
+            <TextField
+              type={showConfirmPassword ? "text" : "password"}
+              fullWidth
+              placeholder="Re-enter your password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              InputProps={{
+                sx: { borderRadius: "10px", height: "50px" },
+              }}
+            />
+            <Box
+              onClick={handleConfirmPasswordClick}
+              sx={{
+                position: "absolute",
+                fontSize: "20px",
+                right: "10px",
+                top: "42px",
+                cursor: "pointer",
+                color: "#333",
+              }}
+            >
+              {showConfirmPassword ? <FaEye /> : <FaEyeSlash />}
+            </Box>
+          </Box>
+
+          <Box>
+            <Typography sx={{ fontWeight: 600, mb: 1 }}>
+              Security Question
+            </Typography>
+            <FormControl fullWidth variant="outlined">
+              <InputLabel id="security-question-label">
+                Select Security Question
+              </InputLabel>
+              <Select
+                labelId="security-question-label"
+                value={securityQuestion}
+                onChange={(e) => setSecurityQuestion(e.target.value)}
+                label="Select Security Question"
+                sx={{ borderRadius: "10px", height: "50px" }}
+              >
+                <MenuItem value="favoriteColor">
+                  What is your favorite color?
+                </MenuItem>
+                <MenuItem value="favoriteGame">
+                  What is your favorite game?
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box>
+            <Typography sx={{ fontWeight: 600, mb: 1 }}>
+              Answer (For Security Question)
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter your answer"
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              InputProps={{
+                sx: { borderRadius: "10px", height: "50px" },
+              }}
+            />
+          </Box>
+
+          <Button
+            onClick={handleSubmit}
+            sx={{
+              backgroundColor: "#151717",
+              color: "#fff",
+              height: "50px",
+              borderRadius: "10px",
+              textTransform: "none",
+              fontWeight: 500,
+              fontSize: "15px",
+              mt: 1,
+              "&:hover": { backgroundColor: "#000" },
             }}
-          />
+            fullWidth
+          >
+            Sign Up
+          </Button>
+
+          <Button
+            onClick={() => navigate("/login")}
+            sx={{
+              border: "1px solid #2d79f3",
+              color: "#2d79f3",
+              height: "50px",
+              borderRadius: "10px",
+              textTransform: "none",
+              fontWeight: 500,
+              fontSize: "15px",
+            }}
+            fullWidth
+          >
+            Go back to Login
+          </Button>
         </Box>
-
-        <Button
-          onClick={handleSubmit}
-          sx={{
-            backgroundColor: "#151717",
-            color: "#fff",
-            height: "50px",
-            borderRadius: "10px",
-            textTransform: "none",
-            fontWeight: 500,
-            fontSize: "15px",
-            mt: 1,
-            "&:hover": { backgroundColor: "#000" },
-          }}
-          fullWidth
-        >
-          Sign Up
-        </Button>
-
-        <Button
-          onClick={() => navigate("/login")}
-          sx={{
-            border: "1px solid #2d79f3",
-            color: "#2d79f3",
-            height: "50px",
-            borderRadius: "10px",
-            textTransform: "none",
-            fontWeight: 500,
-            fontSize: "15px",
-          }}
-          fullWidth
-        >
-          Go back to Login
-        </Button>
       </Box>
-    </Box>
+    </>
   );
 };
 
