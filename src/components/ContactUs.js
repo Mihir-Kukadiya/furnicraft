@@ -24,8 +24,6 @@ const ContactUs = () => {
   });
 
   useEffect(() => {
-    // initialize EmailJS (optional if you always pass user id to sendForm,
-    // but it's a good explicit practice)
     emailjs.init(USER_ID);
   }, []);
 
@@ -33,7 +31,6 @@ const ContactUs = () => {
     e.preventDefault();
     setStatus({ loading: true, success: null, error: null });
 
-    // sendForm will serialize the form fields using the "name" attributes
     emailjs
       .sendForm(SERVICE_ID, TEMPLATE_ID, formRef.current, USER_ID)
       .then(
@@ -88,7 +85,6 @@ const ContactUs = () => {
         </Typography>
       </Box>
 
-      {/* Main Container */}
       <Container
         maxWidth={false}
         disableGutters

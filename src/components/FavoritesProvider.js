@@ -15,8 +15,8 @@ const FavoritesProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(favorites));
-  }, [favorites, storageKey]);
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+  }, [favorites]);
 
   // ========================= add OR remove favorite items =========================
 

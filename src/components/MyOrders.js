@@ -21,13 +21,13 @@ const MyOrders = () => {
   const email = sessionStorage.getItem("email");
 
   // =================== Fetch user's orders ===================
+
   useEffect(() => {
     const fetchMyOrders = async () => {
       try {
         const res = await axios.get("http://localhost:3000/api/orders");
         const myOrders = res.data.filter(
-          (order) =>
-            order.customerEmail?.toLowerCase() === email?.toLowerCase()
+          (order) => order.customerEmail?.toLowerCase() === email?.toLowerCase()
         );
         setOrders(myOrders);
       } catch (err) {
@@ -39,6 +39,7 @@ const MyOrders = () => {
   }, [email]);
 
   // =================== Delete a single order ===================
+  
   const deleteOrder = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -64,9 +65,13 @@ const MyOrders = () => {
   };
 
   // =================== Format date/time nicely ===================
+
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toLocaleDateString();
+    let day = String(date.getDate()).padStart(2, "0");
+    let month = String(date.getMonth() + 1).padStart(2, "0");
+    let year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   const formatTime = (timestamp) => {
@@ -75,6 +80,7 @@ const MyOrders = () => {
   };
 
   // =================== UI ===================
+
   return (
     <Box
       sx={{
@@ -133,14 +139,30 @@ const MyOrders = () => {
                     },
                   }}
                 >
-                  <TableCell><b>Order ID</b></TableCell>
-                  <TableCell><b>Date</b></TableCell>
-                  <TableCell><b>Time</b></TableCell>
-                  <TableCell><b>Items</b></TableCell>
-                  <TableCell><b>Total</b></TableCell>
-                  <TableCell><b>Status</b></TableCell>
-                  <TableCell><b>Payment</b></TableCell>
-                  <TableCell><b>Actions</b></TableCell>
+                  <TableCell>
+                    <b>Order ID</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Date</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Time</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Items</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Total</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Status</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Payment</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Actions</b>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -167,9 +189,7 @@ const MyOrders = () => {
                     </TableCell>
                     <TableCell>₹{order.total}</TableCell>
                     <TableCell>{order.status}</TableCell>
-                    <TableCell>
-                      {order.paymentMethod?.toUpperCase()}
-                    </TableCell>
+                    <TableCell>{order.paymentMethod?.toUpperCase()}</TableCell>
 
                     <TableCell>
                       <Stack
