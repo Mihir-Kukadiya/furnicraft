@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
 const CartContext = createContext();
+const API = "http://localhost:3000/api/cart";   // << Your backend route
 
 const CartProvider = ({ children }) => {
-  // ============================ convert price to number =============================
 
   const parsePriceToNumber = (p) => {
     if (typeof p === "number") return p;
@@ -14,49 +15,55 @@ const CartProvider = ({ children }) => {
     return 0;
   };
 
-  // ============================ manage cart items =============================
-
   const email = sessionStorage.getItem("email");
-  const storageKey = email ? `cartItems_${email}` : "cartItems_guest";
 
-  const [cartItems, setCartItems] = useState(() => {
-    const savedCart = localStorage.getItem(storageKey);
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(cartItems));
-  }, [cartItems, storageKey]);
-
-  // ============================== clear cart =============================
-
-  const clearCart = () => {
-    setCartItems([]);
-    localStorage.removeItem(storageKey);
-  };
-
-  // ============================= products add to cart ============================
-
+  const [cartItems, setCartItems] = useState([]);
   const [message, setMessage] = useState("");
 
-  const addToCart = (product) => {
+  // 🔥 Load cart from MongoDB when user exists
+  useEffect(() => {
+    if (!email) return;                  // no user → no cart fetch
+    axios.get(`${API}/${email}`)
+      .then((res) => setCartItems(res.data))
+      .catch(() => setCartItems([]));
+  }, [email]);
+
+  // ===================== CLEAR CART =======================
+  const clearCart = async () => {
+    if (!email) return setCartItems([]);   // guest cart fallback
+    await axios.delete(`${API}/clear/${email}`);
+    setCartItems([]);
+  };
+
+  // ===================== ADD TO CART =======================
+  const addToCart = async (product) => {
+
     const idToCheck = product._id || product.name;
-    const exists = cartItems.some(
-      (item) => (item._id || item.name) === idToCheck
-    );
+    const exists = cartItems.some(item => (item._id || item.name) === idToCheck);
+
     if (exists) {
       setMessage("Product is already in the cart!");
-    } else {
-      const normalized = {
-        ...product,
-        price: parsePriceToNumber(product.price),
-        image: product.image || product.img || product.imgUrl || "",
-        quantity: 1,
-      };
-      setCartItems((prev) => [...prev, normalized]);
-      setMessage("Product added to cart!");
+      setTimeout(() => setMessage(""), 2000);
+      return;
     }
 
+    const normalized = {
+      ...product,
+      productId: product._id,               // 🆕 required for DB
+      price: parsePriceToNumber(product.price),
+      image: product.image || product.img || product.imgUrl || "",
+      quantity: 1,
+    };
+
+    // 🔥 Save to MongoDB
+    if (email) {
+      await axios.post(`${API}/add`, { email, product: normalized })
+        .then(res => setCartItems(res.data.cart));
+    } else {
+      setCartItems(prev => [...prev, normalized]);  // guest fallback
+    }
+
+    setMessage("Product added to cart!");
     setTimeout(() => setMessage(""), 2000);
   };
 
