@@ -84,7 +84,7 @@ const ExpensiveProducts = () => {
       sx={{
         p: 3,
         height: "auto",
-        paddingTop: "90px",
+        paddingTop: {xs: "10px", md: "20px"},
       }}
     >
       <Snackbar

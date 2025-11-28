@@ -97,7 +97,7 @@ const AboutUs = () => {
       sx={{
         bgcolor: "#fff",
         height: "auto",
-        pt: "60px",
+        pt: "30px",
       }}
     >
       <Box

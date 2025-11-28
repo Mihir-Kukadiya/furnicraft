@@ -533,7 +533,7 @@ const Products = () => {
         id="products"
         sx={{
           position: "relative",
-          paddingTop: "90px",
+          paddingTop: "30px",
           height: "auto",
         }}
       >
@@ -554,7 +554,7 @@ const Products = () => {
         <Typography
           variant="h4"
           fontWeight="bold"
-          mb={3}
+          mb={{xs: 2, md: 3}}
           sx={{
             textAlign: "center",
             fontSize: { xs: "2rem", md: "2.5rem" },
@@ -568,7 +568,7 @@ const Products = () => {
             onClick={() => setIsAddDialogOpen(true)}
             sx={{
               position: "absolute",
-              top: "100px",
+              top: "70px",
               right: "20px",
               transition: ".3s",
               fontWeight: "bold",

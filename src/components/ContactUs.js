@@ -60,7 +60,7 @@ const ContactUs = () => {
       sx={{
         bgcolor: "#fff",
         height: "auto",
-        pt: { xs: "40px", sm: "90px" },
+        pt: { xs: "20px", sm: "20px" },
       }}
     >
       <Box
@@ -88,7 +88,7 @@ const ContactUs = () => {
       <Container
         maxWidth={false}
         disableGutters
-        sx={{ px: { xs: 2, sm: 3 }, py: 6 }}
+        sx={{ px: { xs: 2, sm: 3 }, py: 4 }}
       >
         <Typography
           variant="h4"
