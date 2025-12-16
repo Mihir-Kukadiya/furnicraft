@@ -112,7 +112,7 @@ const Navbar = () => {
   // ============================ nav items ==================================
 
   const navItems = [
-    { label: "Homeeeee", href: "#home" },
+    { label: "Home", href: "#home" },
     { label: "Products", href: "#products" },
     { label: "Expensive", href: "#expensive" },
     { label: "About Us", href: "#about" },
