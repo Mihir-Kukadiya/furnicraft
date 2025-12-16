@@ -8,7 +8,3 @@ database = FurniCraft
 ================ structure of mongoDB URL ===================
 
 mongodb+srv://<username>:<password>@<cluster-url>/<database>?retryWrites=true&w=majority
-
-================ future fixes =================
-
-1. check website is working properly in responsive also.

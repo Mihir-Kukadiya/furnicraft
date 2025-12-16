@@ -203,7 +203,7 @@ const ContactUs = () => {
                 Our Contact Details
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                <FaHome /> &nbsp; B-56 Tulsi darshan soc., Yogichok, Surat.
+                <FaHome /> &nbsp; B-56 Tulsi darshan soc., Yogichowk, Surat.
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 <FaPhoneAlt /> &nbsp; +91 79908 56214

@@ -68,7 +68,7 @@ const AboutUs = () => {
       name: "Vatsal Chaudhari",
       role: "Lead Designer",
       bio: "Vatsal crafts pieces that blend beauty and functionality.",
-      contact: "vatsal@gamil.com",
+      contact: "vatsal@gmail.com",
       mobile: "9586749037",
       role_bgcolor: "green",
     },
