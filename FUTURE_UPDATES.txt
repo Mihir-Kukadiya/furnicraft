@@ -1,8 +1,10 @@
+add serach bar to search products. - completed
+
 customer gives rating on products.
 
 user and admin upload profile picture in my profile.
 
-admin can change their email and password.
+admin can change their email and password. - completed
 
 ---
 

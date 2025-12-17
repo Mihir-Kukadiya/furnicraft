@@ -578,7 +578,6 @@ const Navbar = () => {
       />
 
       <input
-        type="password"
         placeholder="Enter new password"
         value={newAdminPassword}
         autoComplete="new-password"
@@ -607,9 +606,7 @@ const Navbar = () => {
           })
         );
 
-        sessionStorage.clear();
         setIsEditProfileOpen(false);
-        navigate("/login");
         window.location.reload();
       }}
     >
