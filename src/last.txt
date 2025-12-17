@@ -1,0 +1,18 @@
+================ mongoDB =======================
+
+username = mihir
+password = MJ3fCPuacBdv1Ubp
+cluster-url = crud.gpf5w.mongodb.net
+database = FurniCraft
+
+================ structure of mongoDB URL ===================
+
+mongodb+srv://<username>:<password>@<cluster-url>/<database>?retryWrites=true&w=majority
+
+================ future fixes =================
+
+1. fix address page.
+2. when user click proceed to checkout button then it navigate to a payment page and select payment method and in payment page also showing their addresses but choose only one address and checkout.
+3. every user has it's private cart, favorites and addresses means when that specific user login then it shows their cart, favorites and addresses as it is.
+4. when user checkcout then that order is showing to admin.
+5. user can change it's password.
