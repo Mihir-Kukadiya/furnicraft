@@ -1,10 +1,11 @@
+remove profile picture functionality.
+password is displaying in new password's field of admin's edit section.
+
 add serach bar to search products. - completed
 
 display orderdate and receivedate in Orders schema in mongoDB. - completed
 
 make admin globally. - completed
-
-user and admin upload profile picture in my profile.
 
 admin can change their email and password. - completed
 
