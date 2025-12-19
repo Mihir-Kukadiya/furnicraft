@@ -21,7 +21,6 @@ export const adminLogin = async (req, res) => {
       admin: {
         id: admin._id,
         email: admin.email,
-        profileImage: admin.profileImage,
       },
     });
   } catch (err) {
@@ -31,7 +30,7 @@ export const adminLogin = async (req, res) => {
 
 // ================= Update Admin Profile =================
 export const updateAdminProfile = async (req, res) => {
-  const { email, password, profileImage } = req.body;
+  const { email, password } = req.body;
 
   try {
     const admin = await Admin.findOne();
@@ -39,7 +38,6 @@ export const updateAdminProfile = async (req, res) => {
 
     if (email) admin.email = email;
     if (password) admin.password = password;
-    if (profileImage !== undefined) admin.profileImage = profileImage;
 
     await admin.save();
 

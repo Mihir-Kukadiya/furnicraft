@@ -13,10 +13,6 @@ const adminSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    profileImage: {
-      type: String, // base64
-      default: "",
-    },
   },
   { timestamps: true }
 );
