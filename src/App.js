@@ -20,6 +20,7 @@ import MyOrders from "./components/MyOrders";
 
 import CartProvider from "./components/CartProvider";
 import FavoritesProvider from "./components/FavoritesProvider";
+import { FiltersProvider } from "./components/FiltersContext";
 import ThemeContextProvider from "./theme/ThemeContext";
 
 const App = () => {
@@ -27,35 +28,37 @@ const App = () => {
     <ThemeContextProvider>
       <CartProvider>
         <FavoritesProvider>
-          <BrowserRouter>
-            <Navbar />
+          <FiltersProvider>
+            <BrowserRouter>
+              <Navbar />
 
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <>
-                    <Home />
-                    <Products />
-                    <ExpensiveProducts />
-                    <AboutUs />
-                    <ContactUs />
-                    <Footer />
-                  </>
-                }
-              />
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <>
+                      <Home />
+                      <Products />
+                      <ExpensiveProducts />
+                      <AboutUs />
+                      <ContactUs />
+                      <Footer />
+                    </>
+                  }
+                />
 
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/favorites" element={<Favorites />} />
-              <Route path="/address" element={<Address />} />
-              <Route path="/payment" element={<Payment />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/completed-orders" element={<CompleteOrders />} />
-              <Route path="/my-orders" element={<MyOrders />} />
-            </Routes>
-          </BrowserRouter>
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/favorites" element={<Favorites />} />
+                <Route path="/address" element={<Address />} />
+                <Route path="/payment" element={<Payment />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/completed-orders" element={<CompleteOrders />} />
+                <Route path="/my-orders" element={<MyOrders />} />
+              </Routes>
+            </BrowserRouter>
+          </FiltersProvider>
         </FavoritesProvider>
       </CartProvider>
     </ThemeContextProvider>

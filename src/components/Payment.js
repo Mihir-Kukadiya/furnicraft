@@ -18,11 +18,13 @@ import {
   FormControl,
 } from "@mui/material";
 import Swal from "sweetalert2";
+import { useTheme } from "@mui/material/styles";
 import axios from "axios";
 import { useCart } from "./CartProvider";
 import { useNavigate } from "react-router-dom";
 
 const Payment = () => {
+  const theme = useTheme();
   // ======================== cart items =======================
 
   const { cartItems, clearCart } = useCart();
@@ -148,8 +150,8 @@ const Payment = () => {
     const firstName = sessionStorage.getItem("firstName");
     const lastName = sessionStorage.getItem("lastName");
     const fullName =
-    firstName && lastName ? `${firstName} ${lastName}` : "Unknown";
-      
+      firstName && lastName ? `${firstName} ${lastName}` : "Unknown";
+
     const newOrder = {
       customerName: fullName,
       customerEmail: customerEmail,
@@ -210,7 +212,16 @@ const Payment = () => {
         <Box
           sx={{ flex: { xs: "1 1 100%", md: "1 1 48%" }, minWidth: "280px" }}
         >
-          <Card sx={{ p: 3, boxShadow: 4, borderRadius: 3, height: "100%" }}>
+          <Card
+            sx={{
+              p: 3,
+              boxShadow: 4,
+              borderRadius: 3,
+              height: "100%",
+              bgcolor: "background.paper",
+              color: "text.primary",
+            }}
+          >
             <Typography variant="h5" gutterBottom fontWeight="bold">
               Select Delivery Address
             </Typography>
@@ -254,11 +265,15 @@ const Payment = () => {
                               ? "0 6px 20px rgba(33, 150, 243, 0.3)"
                               : "0 3px 10px rgba(0,0,0,0.1)",
                             border: isSelected
-                              ? "2px solid #2196f3"
-                              : "1px solid #eee",
+                              ? `2px solid ${theme.palette.primary.main}`
+                              : `1px solid ${theme.palette.divider}`,
+
                             background: isSelected
-                              ? "linear-gradient(135deg, #e3f2fd, #ffffff)"
-                              : "#fff",
+                              ? theme.palette.mode === "dark"
+                                ? "linear-gradient(135deg, #1e3a5f, #121212)"
+                                : "linear-gradient(135deg, #e3f2fd, #ffffff)"
+                              : theme.palette.background.paper,
+
                             transition: "all 0.3s ease",
                           }}
                         >
@@ -324,9 +339,12 @@ const Payment = () => {
                   fullWidth
                   label="UPI ID"
                   variant="standard"
-                  margin="dense"
-                  value={upiId}
-                  onChange={(e) => setUpiId(e.target.value)}
+                  sx={{
+                    input: { color: "text.primary" },
+                    "& .MuiInput-underline:before": {
+                      borderBottomColor: theme.palette.divider,
+                    },
+                  }}
                 />
               </Box>
             )}
@@ -405,7 +423,14 @@ const Payment = () => {
       </Box>
 
       <Card
-        sx={{ p: 3, boxShadow: 4, borderRadius: 3, bgcolor: "#fafafa", mt: 3 }}
+        sx={{
+          p: 3,
+          boxShadow: 4,
+          borderRadius: 3,
+          bgcolor: "background.paper",
+          color: "text.primary",
+          mt: 3,
+        }}
       >
         <Typography variant="h5" gutterBottom fontWeight="bold">
           Order Summary
@@ -424,7 +449,7 @@ const Payment = () => {
                     display: "flex",
                     alignItems: "center",
                     mb: 1,
-                    borderBottom: "1px solid #eee",
+                    borderBottom: `1px solid ${theme.palette.divider}`,
                     pb: 1,
                   }}
                 >

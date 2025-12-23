@@ -3,6 +3,7 @@ import saleImg from "../images/Products/sale.jpg";
 import axios from "axios";
 import { useTheme } from "@mui/material/styles";
 import { MdEdit } from "react-icons/md";
+import { useFilters } from "./FiltersContext";
 import { Tooltip } from "@mui/material";
 import {
   Box,
@@ -134,38 +135,18 @@ const Products = () => {
     }
   }, [message]);
 
-  // ======================= category ========================
+  // ======================= filter ========================
 
-  const [category, setCategory] = useState("All");
+  const { category, setCategory, searchQuery, setSearchQuery, sort, setSort } =
+    useFilters();
+
+  const handleSearch = (value) => {
+    setSearchQuery(value);
+  };
 
   const handleCategoryChange = (e) => {
     setCategory(e.target.value);
   };
-
-  // ========================= search ============================
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchHistory, setSearchHistory] = useState(() => {
-    return JSON.parse(localStorage.getItem("searchHistory")) || [];
-  });
-
-  const handleSearch = (value) => {
-    setSearchQuery(value);
-
-    if (value.trim() === "") return;
-
-    setSearchHistory((prev) => {
-      if (prev.includes(value)) return prev;
-
-      const updated = [value, ...prev].slice(0, 5);
-      localStorage.setItem("searchHistory", JSON.stringify(updated));
-      return updated;
-    });
-  };
-
-  // ========================= sort ============================
-
-  const [sort, setSort] = useState("");
 
   const handleSortChange = (e) => {
     setSort(e.target.value);
@@ -228,7 +209,7 @@ const Products = () => {
             fontSize: "1.6rem",
             fontWeight: "bold",
             textAlign: "center",
-            color: "text.primary"
+            color: "text.primary",
           }}
         >
           Add New Product
