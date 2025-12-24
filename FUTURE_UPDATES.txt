@@ -1,5 +1,1 @@
-store expensive products data in mongoDB.
-
-apply add, edit and remove facility in expensive products also.
-
 apply real payment system.
