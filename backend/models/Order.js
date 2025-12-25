@@ -2,10 +2,7 @@ import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema(
   {
-    customerName: {
-      type: String,
-      required: true,
-    },
+    customerName: { type: String, required: true },
 
     customerEmail: {
       type: String,
@@ -20,18 +17,14 @@ const orderSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
         },
-        name: {
-          type: String,
-          required: true,
-          match: [/^[A-Za-z\s]+$/, "Name must contain only letters and spaces"],
-        },
+        name: { type: String, required: true },
         price: { type: Number, required: true },
         quantity: { type: Number, required: true, default: 1 },
         image: { type: String },
       },
     ],
 
-    total: { type: Number, required: true },
+    total: { type: Number, required: true, default: 0 },
 
     address: { type: String, required: true },
 
@@ -47,23 +40,29 @@ const orderSchema = new mongoose.Schema(
       default: "Pending",
     },
 
-    orderDate: {
-      type: Date,
-      required: true,
-      default: Date.now,
-    },
-
-    receiveDate: {
-      type: Date,
-      default: null,
-    },
+    orderDate: { type: Date, default: Date.now },
+    receiveDate: { type: Date, default: null },
   },
-  { 
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
-  }
+  { timestamps: true }
 );
+
+orderSchema.pre("validate", function (next) {
+  const calculatedTotal = this.items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  if (Math.abs(this.total - calculatedTotal) > 0.01) {
+    return next(
+      new Error(
+        `Invalid total amount. Expected ${calculatedTotal}, but received ${this.total}`
+      )
+    );
+  }
+
+  next();
+});
+
 
 const Order = mongoose.model("Order", orderSchema);
 export default Order;

@@ -5,7 +5,7 @@ import Order from "../models/Order.js";
 const getOrders = async (req, res) => {
   try {
     const orders = await Order.find()
-      .select('+orderDate +receiveDate') // ✅ Explicitly select date fields
+      .select('+orderDate +receiveDate')
       .sort({ createdAt: -1 });
     
     console.log("📋 Fetched orders count:", orders.length);
@@ -38,8 +38,8 @@ const createOrder = async (req, res) => {
       address: req.body.address,
       paymentMethod: req.body.paymentMethod,
       status: req.body.status || "Pending",
-      orderDate: new Date(), // ✅ Explicitly set orderDate
-      receiveDate: null, // ✅ Explicitly set receiveDate as null initially
+      orderDate: new Date(),
+      receiveDate: null,
     });
 
     const saved = await order.save();
@@ -71,17 +71,14 @@ const updateOrderStatus = async (req, res) => {
 
     console.log("📝 Updating order:", id, "to status:", status);
 
-    // Find the order first to check current state
     const existingOrder = await Order.findById(id);
     
     if (!existingOrder) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // Prepare update data
     const updateData = { status };
 
-    // Set receiveDate when order status changes to "Completed"
     if (status === "Completed" && !existingOrder.receiveDate) {
       updateData.receiveDate = new Date();
       console.log("✅ Setting receiveDate:", updateData.receiveDate);
@@ -132,22 +129,9 @@ const deleteOrder = async (req, res) => {
   }
 };
 
-// ============================= Clear all Orders ==========================
-
-const clearAllOrders = async (req, res) => {
-  try {
-    await Order.deleteMany({});
-    res.json({ message: "All orders deleted successfully" });
-  } catch (err) {
-    console.error("❌ Clear all orders error:", err);
-    res.status(500).json({ error: "Failed to clear all orders" });
-  }
-};
-
 export {
   getOrders,
   createOrder,
   updateOrderStatus,
   deleteOrder,
-  clearAllOrders,
 };

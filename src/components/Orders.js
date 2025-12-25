@@ -43,43 +43,37 @@ const Orders = () => {
   // ======================= update order status [ Complete ] =======================
 
   const markAsCompleted = async (order) => {
-  try {
-    await axios.put(
-      `http://localhost:3000/api/orders/${order._id}/status`,
-      { status: "Completed" }
-    );
+    try {
+      await axios.put(`http://localhost:3000/api/orders/${order._id}/status`, {
+        status: "Completed",
+      });
 
-    await emailjs.send(
-      "service_xtmr7ji",
-      "template_rgik6v6",
-      {
-        to_email: order.customerEmail,
-        customer_name: order.customerName,
-        order_id: order._id,
-        order_total: order.total,
-      },
-      "j4TLiqXB52zF5dvpD"
-    );
+      await emailjs.send(
+        "service_xtmr7ji",
+        "template_rgik6v6",
+        {
+          to_email: order.customerEmail,
+          customer_name: order.customerName,
+          order_id: order._id,
+          order_total: order.total,
+        },
+        "j4TLiqXB52zF5dvpD"
+      );
 
-    const updatedOrders = orders.filter((o) => o._id !== order._id);
-    setOrders(updatedOrders);
-    localStorage.setItem("orders", JSON.stringify(updatedOrders));
+      const updatedOrders = orders.filter((o) => o._id !== order._id);
+      setOrders(updatedOrders);
+      localStorage.setItem("orders", JSON.stringify(updatedOrders));
 
-    Swal.fire(
-      "Completed!",
-      "Order completed & email sent to customer.",
-      "success"
-    );
-  } catch (error) {
-    console.error(error);
-    Swal.fire(
-      "Error",
-      "Order updated but email failed to send.",
-      "warning"
-    );
-  }
-};
-
+      Swal.fire(
+        "Completed!",
+        "Order completed & email sent to customer.",
+        "success"
+      );
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "Order updated but email failed to send.", "warning");
+    }
+  };
 
   // ======================= delete order =======================
 

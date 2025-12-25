@@ -16,7 +16,6 @@ import {
   MenuItem,
 } from "@mui/material";
 import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
-import FavoriteIcon from "@mui/icons-material/Favorite";
 import { MdEdit } from "react-icons/md";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { Dialog, DialogTitle, DialogContent, TextField } from "@mui/material";
@@ -263,7 +262,6 @@ const ExpensiveProducts = () => {
 
                     setExpensiveProducts((prev) => [...prev, res.data]);
 
-                    // ✅ RESET FORM DATA
                     setNewProduct({
                       name: "",
                       price: "",
