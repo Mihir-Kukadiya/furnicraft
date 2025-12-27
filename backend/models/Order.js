@@ -47,22 +47,34 @@ const orderSchema = new mongoose.Schema(
 );
 
 orderSchema.pre("validate", function (next) {
-  const calculatedTotal = this.items.reduce(
+  const subtotal = this.items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
 
-  if (Math.abs(this.total - calculatedTotal) > 0.01) {
+  const discount = subtotal * 0.1;
+  const taxableAmount = subtotal - discount;
+
+  const cgst = taxableAmount * 0.09;
+  const sgst = taxableAmount * 0.09;
+  const igst = 0;
+
+  const shipping = subtotal > 2000 ? 0 : 100;
+
+  const expectedTotal = taxableAmount + cgst + sgst + igst + shipping;
+
+  if (Math.abs(this.total - expectedTotal) > 0.01) {
     return next(
       new Error(
-        `Invalid total amount. Expected ${calculatedTotal}, but received ${this.total}`
+        `Invalid total amount. Expected ${expectedTotal.toFixed(
+          2
+        )}, but received ${this.total}`
       )
     );
   }
 
   next();
 });
-
 
 const Order = mongoose.model("Order", orderSchema);
 export default Order;

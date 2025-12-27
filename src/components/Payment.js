@@ -152,27 +152,44 @@ const Payment = () => {
     const fullName =
       firstName && lastName ? `${firstName} ${lastName}` : "Unknown";
 
+    // Calculate what backend expects (items total only) for validation
+    const itemsTotal = cartItems.reduce(
+      (sum, item) => sum + getNumericPrice(item) * (item.quantity || 1),
+      0
+    );
+
     const newOrder = {
       customerName: fullName,
       customerEmail: customerEmail,
       items: cartItems.map((item) => ({
         productId: item._id || null,
         name: item.name,
-        price: getNumericPrice(item),
+        price: Number(getNumericPrice(item).toFixed(2)),
         quantity: item.quantity || 1,
         image: item.image || item.img || "",
       })),
-      total: Number(total.toFixed(2)),
+      subtotal: Number(subtotal.toFixed(2)),
+      discount: Number(discount.toFixed(2)),
+      cgst: Number(cgst.toFixed(2)),
+      sgst: Number(sgst.toFixed(2)),
+      igst: Number(igst.toFixed(2)),
+      shipping: Number(shipping.toFixed(2)),
+      total: Number(total.toFixed(2)), // ✅ GST INCLUDED
+
       address: selectedAddress,
       paymentMethod,
       status: "Pending",
     };
 
     try {
+      console.log("Sending order:", newOrder);
+      
       const response = await axios.post(
         "http://localhost:3000/api/orders",
         newOrder
       );
+
+      console.log("Order response:", response.data);
 
       const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]");
       existingOrders.push(response.data);
@@ -191,7 +208,12 @@ const Payment = () => {
       });
     } catch (err) {
       console.error("Order API error:", err);
-      Swal.fire("Error", "Failed to place order. Please try again.", "error");
+      console.error("Error response:", err.response?.data);
+      console.error("Error status:", err.response?.status);
+      
+      const errorMsg = err.response?.data?.message || err.message || "Failed to place order";
+      
+      Swal.fire("Error", errorMsg, "error");
     }
   };
 
@@ -339,6 +361,8 @@ const Payment = () => {
                   fullWidth
                   label="UPI ID"
                   variant="standard"
+                  value={upiId}
+                  onChange={(e) => setUpiId(e.target.value)}
                   sx={{
                     input: { color: "text.primary" },
                     "& .MuiInput-underline:before": {

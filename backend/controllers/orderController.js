@@ -30,11 +30,56 @@ const createOrder = async (req, res) => {
   try {
     console.log("📩 Incoming order data:", JSON.stringify(req.body, null, 2));
 
+    const { items, total } = req.body;
+
+    // ================== BACKEND TOTAL CALCULATION ==================
+
+    // 1️⃣ Subtotal
+    const subtotal = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    // 2️⃣ Discount (10%)
+    const discount = subtotal * 0.10;
+    const taxableAmount = subtotal - discount;
+
+    // 3️⃣ GST
+    const cgst = taxableAmount * 0.09;
+    const sgst = taxableAmount * 0.09;
+    const igst = 0;
+
+    // 4️⃣ Shipping
+    const shipping = subtotal > 2000 ? 0 : 100;
+
+    // 5️⃣ Final Total (GST INCLUDED)
+    const expectedTotal =
+      taxableAmount + cgst + sgst + igst + shipping;
+
+    // 6️⃣ FLOAT SAFE COMPARISON
+    if (Math.abs(total - expectedTotal) > 0.01) {
+      return res.status(400).json({
+        message: `Invalid total amount. Expected ${expectedTotal.toFixed(
+          2
+        )}, but received ${total}`,
+      });
+    }
+
+    // ================== SAVE ORDER ==================
+
     const order = new Order({
       customerName: req.body.customerName,
       customerEmail: req.body.customerEmail,
       items: req.body.items,
-      total: req.body.total,
+
+      subtotal: Number(subtotal.toFixed(2)),
+      discount: Number(discount.toFixed(2)),
+      cgst: Number(cgst.toFixed(2)),
+      sgst: Number(sgst.toFixed(2)),
+      igst: Number(igst.toFixed(2)),
+      shipping: Number(shipping.toFixed(2)),
+      total: Number(expectedTotal.toFixed(2)),
+
       address: req.body.address,
       paymentMethod: req.body.paymentMethod,
       status: req.body.status || "Pending",
@@ -43,24 +88,22 @@ const createOrder = async (req, res) => {
     });
 
     const saved = await order.save();
-    
+
     console.log("✅ Order saved:", {
       id: saved._id,
-      orderDate: saved.orderDate,
-      receiveDate: saved.receiveDate,
-      status: saved.status
+      total: saved.total,
     });
-    
+
     res.status(201).json(saved);
   } catch (err) {
     console.error("❌ Order save error:", err);
     res.status(500).json({
       error: "Failed to save order",
-      name: err.name,
       message: err.message,
     });
   }
 };
+
 
 // ============================== Update Order Status ==========================
 
