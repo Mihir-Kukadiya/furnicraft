@@ -23,7 +23,7 @@ const Register = () => {
 
   const registerSchema = Joi.object({
     firstName: Joi.string()
-      .pattern(/^[A-Za-z]+$/)
+      .pattern(/^[A-Za-z\s]+$/)
       .required()
       .messages({
         "string.pattern.base": "First name must contain only letters.",
@@ -31,7 +31,7 @@ const Register = () => {
       }),
 
     lastName: Joi.string()
-      .pattern(/^[A-Za-z]+$/)
+      .pattern(/^[A-Za-z\s]+$/)
       .required()
       .messages({
         "string.pattern.base": "Last name must contain only letters.",
@@ -136,13 +136,11 @@ const Register = () => {
         navigate("/login");
       })
       .catch((err) => {
-        const msg = err.response?.data?.message;
-        if (msg?.includes("User already exists")) {
-          setError("This email is already registered.");
-        } else {
-          setError("Registration failed. Please try again.");
-          setShowErrorPopup(true);
-        }
+        const msg =
+          err.response?.data?.message ||
+          "Registration failed. Please try again.";
+        setError(msg);
+        setShowErrorPopup(true);
       });
   };
 

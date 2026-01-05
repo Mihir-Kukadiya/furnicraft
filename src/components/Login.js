@@ -57,14 +57,19 @@ const Login = () => {
     axios
       .post("http://localhost:3000/api/auth/login", { email, password })
       .then((res) => {
-        const user = res.data.user;
+        const { token, user } = res.data;
 
-        sessionStorage.setItem("token", res.data.token);
+        sessionStorage.setItem("token", token);
         sessionStorage.setItem("email", user.email);
-        sessionStorage.setItem("password", user.password);
+        sessionStorage.setItem("role", user.role);
 
-        sessionStorage.setItem("firstName", user.firstName);
-        sessionStorage.setItem("lastName", user.lastName);
+        if (user.role === "user") {
+          sessionStorage.setItem("firstName", user.firstName);
+          sessionStorage.setItem("lastName", user.lastName);
+        } else {
+          sessionStorage.setItem("firstName", "Admin");
+          sessionStorage.setItem("lastName", "");
+        }
 
         navigate("/");
       })
@@ -102,7 +107,6 @@ const Login = () => {
         "http://localhost:3000/api/auth/change-password",
         {
           email: forgotEmail,
-          securityQuestion,
           securityAnswer,
           newPassword,
         }

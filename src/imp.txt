@@ -8,3 +8,6 @@ database = FurniCraft
 ================ structure of mongoDB URL ===================
 
 mongodb+srv://<username>:<password>@<cluster-url>/<database>?retryWrites=true&w=majority
+
+1. display address in orders page of admin.
+2. CRUD operations must be doing only admin globally (postman).

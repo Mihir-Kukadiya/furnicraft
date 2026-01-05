@@ -69,16 +69,8 @@ const Navbar = () => {
 
   // ======================== admin login ===========================
 
-  const [emailFocus, setEmailFocus] = useState(false);
-  const [passFocus, setPassFocus] = useState(false);
   const email = sessionStorage.getItem("email");
-  const [storedPassword, setStoredPassword] = useState(
-    sessionStorage.getItem("password")
-  );
-
-  React.useEffect(() => {
-    setStoredPassword(sessionStorage.getItem("password"));
-  }, [email]);
+  const role = sessionStorage.getItem("role"); // admin | user
 
   const [loginError, setLoginError] = useState("");
 
@@ -91,10 +83,6 @@ const Navbar = () => {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -151,7 +139,7 @@ const Navbar = () => {
   const [newUserPassword, setNewUserPassword] = useState("");
 
   React.useEffect(() => {
-    if (email && sessionStorage.getItem("isAdmin") !== "true") {
+    if (email && sessionStorage.getItem("role") !== "admin") {
       const savedQuestion =
         localStorage.getItem(`securityQuestion_${email}`) || "";
       setSecurityQuestion(savedQuestion);
@@ -196,16 +184,12 @@ const Navbar = () => {
                 width: "80px",
               }}
             >
-              {sessionStorage.getItem("isAdmin") === "true"
-                ? "A"
-                : email?.charAt(0)?.toUpperCase()}
+              {role === "admin" ? "A" : email?.charAt(0)?.toUpperCase()}
             </Avatar>
           </Box>
 
           <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-            {sessionStorage.getItem("isAdmin") === "true"
-              ? "Admin"
-              : "My Account"}
+            {role === "admin" ? "Admin Account" : "My Account"}
           </Typography>
         </Box>
 
@@ -228,55 +212,14 @@ const Navbar = () => {
             </Typography>
           </Box>
 
-          {/* Password shown ONLY for normal users */}
-          {sessionStorage.getItem("isAdmin") !== "true" && (
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Password
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  p: 1,
-                  backgroundColor: "background.paper",
-                  border: `1px solid ${theme.palette.divider}`,
-                  borderRadius: 1,
-                  fontFamily: "monospace",
-                }}
-              >
-                {storedPassword ? "*".repeat(storedPassword.length) : ""}
-              </Typography>
-            </Box>
-          )}
-
-          {sessionStorage.getItem("isAdmin") === "true" && (
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Password
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  p: 1,
-                  backgroundColor: "background.paper",
-                  border: `1px solid ${theme.palette.divider}`,
-                  borderRadius: 1,
-                  fontFamily: "monospace",
-                }}
-              >
-                {storedPassword || "No password stored"}
-              </Typography>
-            </Box>
-          )}
-
-          {sessionStorage.getItem("isAdmin") === "true" && (
+          {sessionStorage.getItem("role") === "admin" && (
             <Button
               variant="contained"
               fullWidth
               sx={{ mb: 2 }}
               onClick={() => {
                 setNewAdminEmail(email || "");
-                setNewAdminPassword(storedPassword || "");
+                setNewAdminPassword("");
 
                 setIsDialogOpen(false);
                 setIsEditProfileOpen(true);
@@ -285,7 +228,7 @@ const Navbar = () => {
               Edit Profile
             </Button>
           )}
-          {sessionStorage.getItem("isAdmin") !== "true" && (
+          {sessionStorage.getItem("role") !== "admin" && (
             <Button
               variant="contained"
               fullWidth
@@ -316,256 +259,6 @@ const Navbar = () => {
           >
             Logout
           </Button>
-        </Box>
-      </Dialog>
-
-      <Dialog
-        open={isAdminDialogOpen}
-        onClose={() => setIsAdminDialogOpen(false)}
-        fullWidth
-        maxWidth="xs"
-        scroll="body"
-        PaperProps={{
-          sx: {
-            width: {
-              xs: "90%",
-              md: "500px",
-            },
-            maxHeight: "95vh",
-            overflowY: "auto",
-            padding: {
-              xs: "20px",
-              md: "40px",
-            },
-            backgroundColor: "rgba(0,0,0,0.9)",
-            boxShadow: "0 15px 25px rgba(0,0,0,0.6)",
-            borderRadius: "10px",
-            boxSizing: "border-box",
-            color: "#fff",
-          },
-        }}
-      >
-        <Typography
-          variant="h4"
-          sx={{
-            mb: "30px",
-            textAlign: "center",
-            fontWeight: "bold",
-            letterSpacing: "1px",
-          }}
-        >
-          Admin
-        </Typography>
-
-        <Box
-          component="form"
-          sx={{ display: "flex", flexDirection: "column" }}
-          onSubmit={(e) => e.preventDefault()}
-        >
-          <Box sx={{ position: "relative", mb: "30px" }}>
-            <input
-              required
-              type="text"
-              value={adminEmail}
-              onChange={(e) => setAdminEmail(e.target.value)}
-              onFocus={() => setEmailFocus(true)}
-              onBlur={() => setEmailFocus(false)}
-              style={{
-                width: "100%",
-                padding: "10px 0",
-                fontSize: "16px",
-                color: "#fff",
-                background: "transparent",
-                border: "none",
-                borderBottom: "1px solid #fff",
-                outline: "none",
-              }}
-            />
-            <label
-              style={{
-                position: "absolute",
-                left: "0",
-                top: emailFocus || adminEmail ? "-10px" : "10px",
-                fontSize: emailFocus || adminEmail ? "12px" : "16px",
-                color: "#fff",
-                transition: "0.3s ease",
-                pointerEvents: "none",
-              }}
-            >
-              Email
-            </label>
-          </Box>
-
-          <Box sx={{ position: "relative", mb: "30px" }}>
-            <input
-              required
-              type={showPassword ? "text" : "password"}
-              value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
-              onFocus={() => setPassFocus(true)}
-              onBlur={() => setPassFocus(false)}
-              style={{
-                width: "100%",
-                padding: "10px 0",
-                fontSize: "16px",
-                color: "#fff",
-                background: "transparent",
-                border: "none",
-                borderBottom: "1px solid #fff",
-                outline: "none",
-              }}
-            />
-            <label
-              style={{
-                position: "absolute",
-                left: "0",
-                top: passFocus || adminPassword ? "-10px" : "10px",
-                fontSize: passFocus || adminPassword ? "12px" : "16px",
-                color: "#fff",
-                transition: "0.3s ease",
-                pointerEvents: "none",
-              }}
-            >
-              Password
-            </label>
-            <Box
-              onClick={handlePasswordClick}
-              sx={{
-                position: "absolute",
-                right: "0",
-                top: "50%",
-                transform: "translateY(-50%)",
-                cursor: "pointer",
-                color: "#fff",
-                fontSize: "18px",
-              }}
-            >
-              {showPassword ? <FaEye /> : <FaEyeSlash />}
-            </Box>
-          </Box>
-          {loginError && (
-            <Typography
-              variant="body2"
-              sx={{ color: "#f44336", mb: 1, textAlign: "center" }}
-            >
-              {loginError}
-            </Typography>
-          )}
-
-          <Box sx={{ textAlign: "center" }}>
-            <Box
-              component="a"
-              onClick={async () => {
-                try {
-                  const res = await axios.post(
-                    "http://localhost:3000/api/admin/login",
-                    {
-                      email: adminEmail,
-                      password: adminPassword,
-                    }
-                  );
-
-                  sessionStorage.setItem("email", res.data.admin.email);
-                  sessionStorage.setItem("isAdmin", "true");
-
-                  // never store admin password
-                  sessionStorage.setItem("password", adminPassword);
-                  setStoredPassword(adminPassword);
-
-                  setIsAdminDialogOpen(false);
-                  setLoginError("");
-                  navigate("/");
-                } catch (err) {
-                  setLoginError(
-                    err.response?.data?.message || "Invalid admin credentials"
-                  );
-                }
-              }}
-              sx={{
-                position: "relative",
-                display: "inline-block",
-                width: "fit-content",
-                float: "left",
-                padding: "10px 20px",
-                fontWeight: "bold",
-                fontSize: "16px",
-                color: "#fff",
-                textDecoration: "none",
-                textTransform: "uppercase",
-                overflow: "hidden",
-                letterSpacing: "3px",
-                mt: "10px",
-                cursor: "pointer",
-                transition: ".5s",
-                "&:hover": {
-                  backgroundColor: "#fff",
-                  color: "#272727",
-                  borderRadius: "5px",
-                },
-                "& span": {
-                  position: "absolute",
-                  display: "block",
-                },
-                "& span:nth-of-type(1)": {
-                  top: 0,
-                  left: "-100%",
-                  width: "100%",
-                  height: "2px",
-                  background: "linear-gradient(90deg, transparent, #fff)",
-                  animation: "btn-anim1 1.5s linear infinite",
-                },
-                "& span:nth-of-type(2)": {
-                  top: "-100%",
-                  right: 0,
-                  width: "2px",
-                  height: "100%",
-                  background: "linear-gradient(180deg, transparent, #fff)",
-                  animation: "btn-anim2 1.5s linear infinite",
-                  animationDelay: ".375s",
-                },
-                "& span:nth-of-type(3)": {
-                  bottom: 0,
-                  right: "-100%",
-                  width: "100%",
-                  height: "2px",
-                  background: "linear-gradient(270deg, transparent, #fff)",
-                  animation: "btn-anim3 1.5s linear infinite",
-                  animationDelay: ".75s",
-                },
-                "& span:nth-of-type(4)": {
-                  bottom: "-100%",
-                  left: 0,
-                  width: "2px",
-                  height: "100%",
-                  background: "linear-gradient(360deg, transparent, #fff)",
-                  animation: "btn-anim4 1.5s linear infinite",
-                  animationDelay: "1.125s",
-                },
-                "@keyframes btn-anim1": {
-                  "0%": { left: "-100%" },
-                  "50%,100%": { left: "100%" },
-                },
-                "@keyframes btn-anim2": {
-                  "0%": { top: "-100%" },
-                  "50%,100%": { top: "100%" },
-                },
-                "@keyframes btn-anim3": {
-                  "0%": { right: "-100%" },
-                  "50%,100%": { right: "100%" },
-                },
-                "@keyframes btn-anim4": {
-                  "0%": { bottom: "-100%" },
-                  "50%,100%": { bottom: "100%" },
-                },
-              }}
-            >
-              <span></span>
-              <span></span>
-              <span></span>
-              <span></span>
-              Submit
-            </Box>
-          </Box>
         </Box>
       </Dialog>
 
@@ -649,7 +342,6 @@ const Navbar = () => {
                   "http://localhost:3000/api/auth/change-password",
                   {
                     email,
-                    securityQuestion,
                     securityAnswer,
                     newPassword: newUserPassword,
                   }
@@ -720,7 +412,7 @@ const Navbar = () => {
                 width: "80px",
               }}
             >
-              {sessionStorage.getItem("isAdmin") === "true"
+              {sessionStorage.getItem("role") === "admin"
                 ? "A"
                 : email?.charAt(0)?.toUpperCase()}
             </Avatar>
@@ -779,7 +471,7 @@ const Navbar = () => {
             sx={{ mb: 1 }}
             onClick={async () => {
               try {
-                await axios.put("http://localhost:3000/api/admin/update", {
+                await axios.put("http://localhost:3000/api/auth/admin/update", {
                   email: newAdminEmail,
                   password: newAdminPassword,
                 });
@@ -790,7 +482,6 @@ const Navbar = () => {
 
                 sessionStorage.setItem("email", newAdminEmail);
                 sessionStorage.setItem("password", newAdminPassword);
-                setStoredPassword(newAdminPassword);
 
                 setIsEditProfileOpen(false);
               } catch (err) {
@@ -856,43 +547,32 @@ const Navbar = () => {
                   onKeyDown={() => setDrawerOpen(false)}
                 >
                   <List>
-                    {navItems.map((item) => {
-                      if (item.label === "Admin") {
-                        if (email) return null;
+                    {navItems
+                      .filter((item) => item.label !== "Admin")
+                      .map((item) => {
+                        if (item.label === "Login") {
+                          if (email) return null;
+                          return (
+                            <ListItem
+                              button
+                              key="Login"
+                              onClick={() => navigate("/login")}
+                            >
+                              <ListItemText primary="Login" />
+                            </ListItem>
+                          );
+                        }
+
                         return (
                           <ListItem
                             button
-                            key="Admin"
-                            onClick={() => setIsAdminDialogOpen(true)}
+                            key={item.label}
+                            onClick={() => handleNavClick(item.href)}
                           >
-                            <ListItemText primary="Admin" />
+                            <ListItemText primary={item.label} />
                           </ListItem>
                         );
-                      }
-
-                      if (item.label === "Login") {
-                        if (email) return null;
-                        return (
-                          <ListItem
-                            button
-                            key="Login"
-                            onClick={() => navigate("/login")}
-                          >
-                            <ListItemText primary="Login" />
-                          </ListItem>
-                        );
-                      }
-
-                      return (
-                        <ListItem
-                          button
-                          key={item.label}
-                          onClick={() => handleNavClick(item.href)}
-                        >
-                          <ListItemText primary={item.label} />
-                        </ListItem>
-                      );
-                    })}
+                      })}
 
                     {email && (
                       <ListItem
@@ -906,7 +586,7 @@ const Navbar = () => {
                       </ListItem>
                     )}
 
-                    {email && sessionStorage.getItem("isAdmin") === "true" && (
+                    {email && sessionStorage.getItem("role") === "admin" && (
                       <ListItem
                         button
                         onClick={() => {
@@ -918,7 +598,7 @@ const Navbar = () => {
                       </ListItem>
                     )}
 
-                    {email && sessionStorage.getItem("isAdmin") !== "true" && (
+                    {email && role === "user" && (
                       <>
                         <ListItem
                           button
@@ -932,7 +612,7 @@ const Navbar = () => {
                       </>
                     )}
 
-                    {email && sessionStorage.getItem("isAdmin") !== "true" && (
+                    {email && sessionStorage.getItem("role") !== "admin" && (
                       <ListItem
                         button
                         onClick={() => {
@@ -948,14 +628,12 @@ const Navbar = () => {
                       <ListItem
                         button
                         onClick={() => {
-                          sessionStorage.removeItem("email");
-                          sessionStorage.removeItem("password");
-                          sessionStorage.removeItem("isAdmin");
+                          sessionStorage.clear();
                           localStorage.removeItem("cartItems");
                           localStorage.removeItem("favorites");
-                          setDrawerOpen(false);
                           navigate("/login");
                           window.location.reload();
+                          setDrawerOpen(false);
                         }}
                       >
                         <ListItemText primary="Logout" />
@@ -1050,13 +728,13 @@ const Navbar = () => {
                 <Avatar
                   sx={{
                     bgcolor:
-                      sessionStorage.getItem("isAdmin") === "true"
+                      sessionStorage.getItem("role") === "admin"
                         ? "#2f4bd7"
                         : "primary.main",
                     color: "#000",
                   }}
                 >
-                  {sessionStorage.getItem("isAdmin") === "true"
+                  {sessionStorage.getItem("role") === "admin"
                     ? "A"
                     : email?.charAt(0)?.toUpperCase()}
                 </Avatar>
@@ -1086,7 +764,7 @@ const Navbar = () => {
                   My account
                 </MenuItem>
 
-                {email && sessionStorage.getItem("isAdmin") === "true" && (
+                {email && role === "admin" && (
                   <MenuItem
                     onClick={() => {
                       handleCloseMenu();
@@ -1096,18 +774,7 @@ const Navbar = () => {
                     Orders
                   </MenuItem>
                 )}
-
-                {!email && (
-                  <MenuItem
-                    onClick={() => {
-                      handleCloseMenu();
-                      setIsAdminDialogOpen(true);
-                    }}
-                  >
-                    Admin
-                  </MenuItem>
-                )}
-                {email && sessionStorage.getItem("isAdmin") !== "true" && (
+                {email && role === "user" && (
                   <MenuItem
                     onClick={() => {
                       handleCloseMenu();
@@ -1117,7 +784,7 @@ const Navbar = () => {
                     Address
                   </MenuItem>
                 )}
-                {email && sessionStorage.getItem("isAdmin") !== "true" && (
+                {email && sessionStorage.getItem("role") !== "admin" && (
                   <MenuItem
                     onClick={() => {
                       handleCloseMenu();
@@ -1132,10 +799,11 @@ const Navbar = () => {
                   <MenuItem
                     onClick={() => {
                       handleCloseMenu();
-                      sessionStorage.removeItem("email");
-                      sessionStorage.removeItem("password");
-                      sessionStorage.removeItem("isAdmin");
+                      sessionStorage.clear();
+                      localStorage.removeItem("cartItems");
+                      localStorage.removeItem("favorites");
                       navigate("/login");
+                      window.location.reload();
                     }}
                   >
                     Log Out
