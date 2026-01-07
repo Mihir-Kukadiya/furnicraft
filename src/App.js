@@ -18,6 +18,8 @@ import Orders from "./components/Orders";
 import CompleteOrders from "./components/completeOrders";
 import MyOrders from "./components/MyOrders";
 
+import BubbleCursor from "./components/BubbleCursos";
+
 import CartProvider from "./components/CartProvider";
 import FavoritesProvider from "./components/FavoritesProvider";
 import { FiltersProvider } from "./components/FiltersContext";
@@ -30,6 +32,7 @@ const App = () => {
         <FavoritesProvider>
           <FiltersProvider>
             <BrowserRouter>
+              <BubbleCursor />
               <Navbar />
 
               <Routes>

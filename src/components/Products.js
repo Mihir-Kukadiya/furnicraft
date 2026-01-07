@@ -76,7 +76,8 @@ const Products = () => {
 
   // ============================== admin ==============================
 
-  const isAdmin = sessionStorage.getItem("isAdmin") === "true";
+  const role = sessionStorage.getItem("role"); // "admin" | "user"
+  const isAdmin = role === "admin";
 
   // ========================= add product popup =========================
 
@@ -846,21 +847,26 @@ const Products = () => {
                           onClick={(e) => {
                             e.stopPropagation();
                             const userEmail = sessionStorage.getItem("email");
-                            if (userEmail && !isAdmin) {
-                              addToCart(product);
-                            } else if (isAdmin) {
+
+                            if (!userEmail) {
                               setSnackbarMessage(
-                                "Admin cannot add items to cart"
+                                "Please log in to add items to cart"
                               );
                               setSnackbarSeverity("warning");
                               setOpenSnackbar(true);
-                            } else {
-                              setSnackbarMessage(
-                                "Please log in to add items to your cart"
-                              );
-                              setSnackbarSeverity("warning");
-                              setOpenSnackbar(true);
+                              return;
                             }
+
+                            if (isAdmin) {
+                              setSnackbarMessage(
+                                "Admin cannot add products to cart"
+                              );
+                              setSnackbarSeverity("warning");
+                              setOpenSnackbar(true);
+                              return;
+                            }
+
+                            addToCart(product);
                           }}
                         >
                           Add to Cart
@@ -945,21 +951,26 @@ const Products = () => {
                                 e.stopPropagation();
                                 const userEmail =
                                   sessionStorage.getItem("email");
-                                if (userEmail && !isAdmin) {
-                                  toggleFavorite(product);
-                                } else if (isAdmin) {
+
+                                if (!userEmail) {
                                   setSnackbarMessage(
-                                    "Admin cannot add items in favorites"
+                                    "Please log in to use favorites"
                                   );
                                   setSnackbarSeverity("warning");
                                   setOpenSnackbar(true);
-                                } else {
-                                  setSnackbarMessage(
-                                    "Please log in to add items in favorites"
-                                  );
-                                  setSnackbarSeverity("warning");
-                                  setOpenSnackbar(true);
+                                  return;
                                 }
+
+                                if (isAdmin) {
+                                  setSnackbarMessage(
+                                    "Admin cannot add products to favorites"
+                                  );
+                                  setSnackbarSeverity("warning");
+                                  setOpenSnackbar(true);
+                                  return;
+                                }
+
+                                toggleFavorite(product);
                               }}
                             >
                               {isFavorite(product) ? (

@@ -182,6 +182,9 @@ const Orders = () => {
                     <b>Status</b>
                   </TableCell>
                   <TableCell>
+                    <b>Address</b>
+                  </TableCell>
+                  <TableCell>
                     <b>Actions</b>
                   </TableCell>
                 </TableRow>
@@ -207,6 +210,18 @@ const Orders = () => {
                     </TableCell>
                     <TableCell>₹{order.total}</TableCell>
                     <TableCell>{order.status}</TableCell>
+                    <TableCell>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          maxWidth: 220,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {order.address}
+                      </Typography>
+                    </TableCell>
                     <TableCell>
                       <Stack
                         direction={{ xs: "column", sm: "row" }}

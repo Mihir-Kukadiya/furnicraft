@@ -110,6 +110,9 @@ const CompleteOrders = () => {
                   <TableCell>
                     <b>Total</b>
                   </TableCell>
+                  <TableCell>
+                    <b>Address</b>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -129,6 +132,18 @@ const CompleteOrders = () => {
                       ))}
                     </TableCell>
                     <TableCell>₹{order.total}</TableCell>
+                    <TableCell>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          maxWidth: 220,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {order.address}
+                      </Typography>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

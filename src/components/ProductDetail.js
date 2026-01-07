@@ -33,35 +33,44 @@ const ProductDetail = ({
   if (!product) return null;
 
   const userEmail = sessionStorage.getItem("email");
-  const isAdmin = sessionStorage.getItem("isAdmin") === "true";
-  const isLoggedInUser = userEmail && !isAdmin;
+  const role = sessionStorage.getItem("role"); // "admin" | "user"
+  const isAdmin = role === "admin";
+  const isLoggedInUser = role === "user";
 
   const handleAddToCart = () => {
-    if (isLoggedInUser) {
-      onAddToCart?.(product);
-    } else if (isAdmin) {
-      setSnackbarMessage("Admin cannot add items to cart");
-      setSnackbarSeverity("warning");
-      setOpenSnackbar(true);
-    } else {
+    if (!userEmail) {
       setSnackbarMessage("Please log in to add items to your cart");
       setSnackbarSeverity("warning");
       setOpenSnackbar(true);
+      return;
     }
+
+    if (isAdmin) {
+      setSnackbarMessage("Admin cannot add items to cart");
+      setSnackbarSeverity("warning");
+      setOpenSnackbar(true);
+      return;
+    }
+
+    onAddToCart?.(product);
   };
 
   const handleToggleFavorite = () => {
-    if (isLoggedInUser) {
-      onToggleFavorite?.(product);
-    } else if (isAdmin) {
-      setSnackbarMessage("Admin cannot add items to favorites");
-      setSnackbarSeverity("warning");
-      setOpenSnackbar(true);
-    } else {
+    if (!userEmail) {
       setSnackbarMessage("Please log in to manage favorites");
       setSnackbarSeverity("warning");
       setOpenSnackbar(true);
+      return;
     }
+
+    if (isAdmin) {
+      setSnackbarMessage("Admin cannot add items to favorites");
+      setSnackbarSeverity("warning");
+      setOpenSnackbar(true);
+      return;
+    }
+
+    onToggleFavorite?.(product);
   };
 
   const favorited = isFavorite?.(product);

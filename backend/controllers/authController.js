@@ -118,7 +118,9 @@ export const updateAdminProfile = async (req, res) => {
     }
 
     if (email) admin.email = email;
-    if (password) admin.password = password;
+    if (password) {
+      admin.password = await bcrypt.hash(password, 10);
+    }
 
     await admin.save();
 
@@ -139,9 +141,11 @@ export const createAdmin = async (req, res) => {
       return res.status(400).json({ message: "Admin already exists" });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const admin = await Auth.create({
       email,
-      password,
+      password: hashedPassword,
       role: "admin",
     });
 

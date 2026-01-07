@@ -177,6 +177,9 @@ const MyOrders = () => {
                     <b>Payment</b>
                   </TableCell>
                   <TableCell>
+                    <b>Address</b>
+                  </TableCell>
+                  <TableCell>
                     <b>Actions</b>
                   </TableCell>
                 </TableRow>
@@ -232,6 +235,18 @@ const MyOrders = () => {
                       />
                     </TableCell>
                     <TableCell>{order.paymentMethod?.toUpperCase()}</TableCell>
+                    <TableCell>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          maxWidth: 220,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {order.address}
+                      </Typography>
+                    </TableCell>
 
                     <TableCell>
                       <Stack

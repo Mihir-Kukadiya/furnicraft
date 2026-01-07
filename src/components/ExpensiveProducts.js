@@ -36,7 +36,8 @@ const ExpensiveProducts = () => {
   // ============================== fetch products data ===============================
 
   const [expensiveProducts, setExpensiveProducts] = useState([]);
-  const isAdmin = sessionStorage.getItem("isAdmin") === "true";
+  const role = sessionStorage.getItem("role"); // "admin" | "user"
+  const isAdmin = role === "admin";
 
   useEffect(() => {
     const fetchExpensiveProducts = async () => {
@@ -800,21 +801,26 @@ const ExpensiveProducts = () => {
                             onClick={(e) => {
                               e.stopPropagation();
                               const userEmail = sessionStorage.getItem("email");
-                              if (userEmail && !isAdmin) {
-                                addToCart(product);
-                              } else if (isAdmin) {
-                                setSnackbarMessage(
-                                  "Admin cannot add items to cart"
-                                );
-                                setSnackbarSeverity("warning");
-                                setOpenSnackbar(true);
-                              } else {
+
+                              if (!userEmail) {
                                 setSnackbarMessage(
                                   "Please log in to add items to your cart"
                                 );
                                 setSnackbarSeverity("warning");
                                 setOpenSnackbar(true);
+                                return;
                               }
+
+                              if (isAdmin) {
+                                setSnackbarMessage(
+                                  "Admin cannot add items to cart"
+                                );
+                                setSnackbarSeverity("warning");
+                                setOpenSnackbar(true);
+                                return;
+                              }
+
+                              addToCart(product);
                             }}
                           >
                             Add to Cart
@@ -903,21 +909,26 @@ const ExpensiveProducts = () => {
                                   e.stopPropagation();
                                   const userEmail =
                                     sessionStorage.getItem("email");
-                                  if (userEmail && !isAdmin) {
-                                    toggleFavorite(product);
-                                  } else if (isAdmin) {
+
+                                  if (!userEmail) {
+                                    setSnackbarMessage(
+                                      "Please log in to add items to favorites"
+                                    );
+                                    setSnackbarSeverity("warning");
+                                    setOpenSnackbar(true);
+                                    return;
+                                  }
+
+                                  if (isAdmin) {
                                     setSnackbarMessage(
                                       "Admin cannot add items in favorites"
                                     );
                                     setSnackbarSeverity("warning");
                                     setOpenSnackbar(true);
-                                  } else {
-                                    setSnackbarMessage(
-                                      "Please log in to add items in favorites"
-                                    );
-                                    setSnackbarSeverity("warning");
-                                    setOpenSnackbar(true);
+                                    return;
                                   }
+
+                                  toggleFavorite(product);
                                 }}
                               >
                                 {isFavorited(product) ? (
