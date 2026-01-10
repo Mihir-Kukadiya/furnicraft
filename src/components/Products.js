@@ -55,7 +55,7 @@ const Products = () => {
 
   useEffect(() => {
     axiosInstance
-      .get("http://localhost:3000/api/products")
+      .get("/products")
       .then((res) => setProductsData(res.data))
       .catch((err) => console.error(err));
   }, []);
@@ -85,7 +85,7 @@ const Products = () => {
 
   useEffect(() => {
     axiosInstance
-      .get("http://localhost:3000/api/products")
+      .get("/products")
       .then((res) => setProductsData(res.data))
       .catch((err) => console.error(err));
   }, []);
@@ -322,23 +322,22 @@ const Products = () => {
                 variant="contained"
                 onClick={() => {
                   axiosInstance
-  .post("/products", newProduct)
-  .then((res) => {
-    setProductsData([...productsData, res.data]);
-    setSnackbarMessage("Product added successfully");
-    setSnackbarSeverity("success");
-    setOpenSnackbar(true);
-    setIsAddDialogOpen(false);
-  })
-  .catch((err) => {
-    console.error(err);
-    setSnackbarMessage(
-      err.response?.data?.message || "Error saving product"
-    );
-    setSnackbarSeverity("error");
-    setOpenSnackbar(true);
-  });
-
+                    .post("/products", newProduct)
+                    .then((res) => {
+                      setProductsData([...productsData, res.data]);
+                      setSnackbarMessage("Product added successfully");
+                      setSnackbarSeverity("success");
+                      setOpenSnackbar(true);
+                      setIsAddDialogOpen(false);
+                    })
+                    .catch((err) => {
+                      console.error(err);
+                      setSnackbarMessage(
+                        err.response?.data?.message || "Error saving product"
+                      );
+                      setSnackbarSeverity("error");
+                      setOpenSnackbar(true);
+                    });
                 }}
                 sx={{
                   mt: 1,
@@ -528,27 +527,27 @@ const Products = () => {
                   variant="contained"
                   onClick={() => {
                     axiosInstance
-  .put(`/products/${editProduct._id}`, editProduct)
-  .then((res) => {
-    setProductsData((prev) =>
-      prev.map((p) =>
-        p._id === editProduct._id ? res.data : p
-      )
-    );
-    setSnackbarMessage("Product updated successfully");
-    setSnackbarSeverity("success");
-    setOpenSnackbar(true);
-    setIsEditDialogOpen(false);
-  })
-  .catch((err) => {
-    console.error(err);
-    setSnackbarMessage(
-      err.response?.data?.message || "Failed to update product"
-    );
-    setSnackbarSeverity("error");
-    setOpenSnackbar(true);
-  });
-
+                      .put(`/products/${editProduct._id}`, editProduct)
+                      .then((res) => {
+                        setProductsData((prev) =>
+                          prev.map((p) =>
+                            p._id === editProduct._id ? res.data : p
+                          )
+                        );
+                        setSnackbarMessage("Product updated successfully");
+                        setSnackbarSeverity("success");
+                        setOpenSnackbar(true);
+                        setIsEditDialogOpen(false);
+                      })
+                      .catch((err) => {
+                        console.error(err);
+                        setSnackbarMessage(
+                          err.response?.data?.message ||
+                            "Failed to update product"
+                        );
+                        setSnackbarSeverity("error");
+                        setOpenSnackbar(true);
+                      });
                   }}
                   sx={{
                     mt: 1,
@@ -874,24 +873,28 @@ const Products = () => {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     axiosInstance
-  .delete(`/products/${product._id}`)
-  .then(() => {
-    setProductsData((prev) =>
-      prev.filter((p) => p._id !== product._id)
-    );
-    setSnackbarMessage("Product deleted successfully");
-    setSnackbarSeverity("success");
-    setOpenSnackbar(true);
-  })
-  .catch((err) => {
-    console.error(err);
-    setSnackbarMessage(
-      err.response?.data?.message || "Failed to delete product"
-    );
-    setSnackbarSeverity("error");
-    setOpenSnackbar(true);
-  });
-
+                                      .delete(`/products/${product._id}`)
+                                      .then(() => {
+                                        setProductsData((prev) =>
+                                          prev.filter(
+                                            (p) => p._id !== product._id
+                                          )
+                                        );
+                                        setSnackbarMessage(
+                                          "Product deleted successfully"
+                                        );
+                                        setSnackbarSeverity("success");
+                                        setOpenSnackbar(true);
+                                      })
+                                      .catch((err) => {
+                                        console.error(err);
+                                        setSnackbarMessage(
+                                          err.response?.data?.message ||
+                                            "Failed to delete product"
+                                        );
+                                        setSnackbarSeverity("error");
+                                        setOpenSnackbar(true);
+                                      });
                                   }}
                                   sx={{
                                     marginRight: { xs: "0", md: "10px" },

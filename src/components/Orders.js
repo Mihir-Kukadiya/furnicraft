@@ -14,9 +14,9 @@ import {
   Stack,
 } from "@mui/material";
 import emailjs from "emailjs-com";
-import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../utils/axiosInstance";
 
 const Orders = () => {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ const Orders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/api/orders");
+        const res = await axiosInstance.get("/orders");
         const pendingOrders = res.data.filter(
           (order) => order.status === "Pending"
         );
@@ -44,7 +44,7 @@ const Orders = () => {
 
   const markAsCompleted = async (order) => {
     try {
-      await axios.put(`http://localhost:3000/api/orders/${order._id}/status`, {
+      await axiosInstance.put(`/orders/${order._id}/status`, {
         status: "Completed",
       });
 
@@ -91,7 +91,7 @@ const Orders = () => {
     if (!result.isConfirmed) return;
 
     try {
-      await axios.delete(`http://localhost:3000/api/orders/${id}`);
+      await axiosInstance.delete(`/orders/${id}`);
 
       const filtered = orders.filter((o) => o._id !== id);
       setOrders(filtered);

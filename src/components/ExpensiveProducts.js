@@ -43,7 +43,7 @@ const ExpensiveProducts = () => {
     const fetchExpensiveProducts = async () => {
       try {
         const res = await axiosInstance.get(
-          "http://localhost:3000/api/expensive-products"
+          "/expensive-products"
         );
 
         const sortedByPrice = [...res.data].sort(
@@ -257,7 +257,7 @@ const ExpensiveProducts = () => {
                 onClick={async () => {
                   try {
                     const res = await axiosInstance.post(
-                      "http://localhost:3000/api/expensive-products",
+                      "/expensive-products",
                       { ...newProduct, price: Number(newProduct.price) }
                     );
 
@@ -459,7 +459,7 @@ const ExpensiveProducts = () => {
                   variant="contained"
                   onClick={async () => {
                     const res = await axiosInstance.put(
-                      `http://localhost:3000/api/expensive-products/${editProduct._id}`,
+                      `/expensive-products/${editProduct._id}`,
                       { ...editProduct, price: Number(editProduct.price) }
                     );
                     setExpensiveProducts((prev) =>
@@ -693,7 +693,7 @@ const ExpensiveProducts = () => {
                                       e.stopPropagation();
                                       axiosInstance
                                         .delete(
-                                          `http://localhost:3000/api/expensive-products/${product._id}`
+                                          `/expensive-products/${product._id}`
                                         )
 
                                         .then(() => {

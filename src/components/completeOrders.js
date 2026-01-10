@@ -12,8 +12,8 @@ import {
   TableRow,
   Button,
 } from "@mui/material";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../utils/axiosInstance";
 
 const CompleteOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -22,7 +22,7 @@ const CompleteOrders = () => {
   useEffect(() => {
     const fetchCompletedOrders = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/api/orders");
+        const res = await axiosInstance.get("/orders");
         const completed = res.data.filter(
           (order) => order.status === "Completed"
         );

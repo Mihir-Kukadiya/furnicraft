@@ -19,9 +19,9 @@ import {
 } from "@mui/material";
 import Swal from "sweetalert2";
 import { useTheme } from "@mui/material/styles";
-import axios from "axios";
 import { useCart } from "./CartProvider";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../utils/axiosInstance";
 
 const Payment = () => {
   const theme = useTheme();
@@ -184,8 +184,8 @@ const Payment = () => {
     try {
       console.log("Sending order:", newOrder);
       
-      const response = await axios.post(
-        "http://localhost:3000/api/orders",
+      const response = await axiosInstance.post(
+        "/orders",
         newOrder
       );
 

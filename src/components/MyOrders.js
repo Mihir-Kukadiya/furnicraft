@@ -14,8 +14,8 @@ import {
   Stack,
   Chip,
 } from "@mui/material";
-import axios from "axios";
 import Swal from "sweetalert2";
+import axiosInstance from "../utils/axiosInstance";
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -26,7 +26,7 @@ const MyOrders = () => {
   useEffect(() => {
     const fetchMyOrders = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/api/orders");
+        const res = await axiosInstance.get("/orders");
         console.log("📦 Fetched orders:", res.data); // ✅ Debug log
         const myOrders = res.data.filter(
           (order) => order.customerEmail?.toLowerCase() === email?.toLowerCase()
@@ -65,7 +65,7 @@ const MyOrders = () => {
     if (!result.isConfirmed) return;
 
     try {
-      await axios.delete(`http://localhost:3000/api/orders/${id}`);
+      await axiosInstance.delete(`/orders/${id}`);
       const updatedOrders = orders.filter((order) => order._id !== id);
       setOrders(updatedOrders);
       Swal.fire("Cancelled!", "Your order has been cancelled.", "success");

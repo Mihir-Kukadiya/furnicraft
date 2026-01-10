@@ -106,14 +106,51 @@ const updateOrderStatus = async (req, res) => {
 
     console.log("📝 Updating order:", id, "to status:", status);
 
+    // ✅ check login user role
+    const userRole = req.user?.role;
+
+    // ✅ ROLE BASED VALIDATION
+    if (userRole === "admin") {
+      // admin allowed only completed
+      if (status !== "Completed") {
+        return res.status(403).json({
+          message: "Admin can only change status to Completed",
+        });
+      }
+    } else if (userRole === "user") {
+      // user allowed only cancelled
+      if (status !== "Cancelled") {
+        return res.status(403).json({
+          message: "User can only change status to Cancelled",
+        });
+      }
+    } else {
+      return res.status(403).json({ message: "Role not allowed" });
+    }
+
     const existingOrder = await Order.findById(id);
 
     if (!existingOrder) {
       return res.status(404).json({ message: "Order not found" });
     }
 
+    // ✅ extra security: user can cancel ONLY their own order
+    if (userRole === "user" && existingOrder.customerEmail !== req.user.email) {
+      return res.status(403).json({
+        message: "You can cancel only your own orders",
+      });
+    }
+
+    // ✅ if already completed, user cannot cancel later
+    if (existingOrder.status === "Completed") {
+      return res.status(400).json({
+        message: "Order already Completed, cannot change status",
+      });
+    }
+
     const updateData = { status };
 
+    // ✅ set receiveDate only when completed
     if (status === "Completed" && !existingOrder.receiveDate) {
       updateData.receiveDate = new Date();
       console.log("✅ Setting receiveDate:", updateData.receiveDate);
