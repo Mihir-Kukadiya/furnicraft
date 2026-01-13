@@ -1,20 +1,27 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../utils/axiosInstance";
 
 const FavoritesContext = createContext();
-const API = "http://localhost:3000/api/favorites";
 
 const FavoritesProvider = ({ children }) => {
   const email = sessionStorage.getItem("email");
   const [favorites, setFavorites] = useState([]);
   const [message, setMessage] = useState("");
 
+  // ======================= Fetch favorites =======================
   useEffect(() => {
     if (!email) return;
-    axios.get(`${API}/${email}`).then((res) => setFavorites(res.data));
+
+    axiosInstance
+      .get(`/favorites/${email}`)
+      .then((res) => setFavorites(res.data))
+      .catch((err) =>
+        console.error("Fetch favorites error:", err.response?.data || err.message)
+      );
   }, [email]);
 
-  const toggleFavorite = async (product) => {
+  // ======================= Add Favorite =======================
+  const addFavorite = async (product) => {
     const formatted = {
       productId: product._id,
       name: product.name,
@@ -22,56 +29,66 @@ const FavoritesProvider = ({ children }) => {
       image: product.img || product.image,
     };
 
-    if (email) {
-      const res = await axios.post(`${API}/toggle`, {
+    if (!email) {
+      setMessage("Please login to add favorites");
+      setTimeout(() => setMessage(""), 2000);
+      return;
+    }
+
+    try {
+      const res = await axiosInstance.post(`/favorites/add`, {
         email,
         product: formatted,
       });
-      setFavorites(res.data.favorites);
-      setMessage(
-        res.data.message === "added"
-          ? "Product added to favorites!"
-          : "Product removed!"
-      );
-    } else {
-      setFavorites((prev) =>
-        prev.find((i) => i.name === product.name)
-          ? prev.filter((i) => i.name !== product.name)
-          : [...prev, product]
-      );
-    }
 
-    setTimeout(() => setMessage(""), 2000);
+      setFavorites(res.data.favorites);
+      setMessage("Product added to favorites!");
+      setTimeout(() => setMessage(""), 2000);
+    } catch (err) {
+      console.error("Add favorite error:", err.response?.data || err.message);
+      setMessage("Failed to add favorite");
+      setTimeout(() => setMessage(""), 2000);
+    }
   };
 
+  // ======================= Check Favorite =======================
   const isFavorite = (p) => favorites.some((i) => i.productId === p._id);
 
+  // ======================= Remove Favorite =======================
   const removeFavorite = async (product) => {
-    if (email) {
-      const res = await axios.delete(`${API}/remove`, {
+    if (!email) return;
+
+    try {
+      const res = await axiosInstance.delete(`/favorites/remove`, {
         data: { email, productId: product.productId },
       });
       setFavorites(res.data);
-    } else {
-      setFavorites((prev) =>
-        prev.filter((i) => i.productId !== product.productId)
-      );
+      setMessage("Product removed from favorites!");
+      setTimeout(() => setMessage(""), 2000);
+    } catch (err) {
+      console.error("Remove favorite error:", err.response?.data || err.message);
+      setMessage("Failed to remove favorite");
+      setTimeout(() => setMessage(""), 2000);
     }
-
-    setMessage("Product removed from favorites!");
-    setTimeout(() => setMessage(""), 2000);
   };
 
+  // ======================= Clear Favorites =======================
   const clearFavorites = async () => {
-    await axios.delete(`${API}/clear/${email}`);
-    setFavorites([]);
+    if (!email) return;
+
+    try {
+      await axiosInstance.delete(`/favorites/clear/${email}`);
+      setFavorites([]);
+    } catch (err) {
+      console.error("Clear favorites error:", err.response?.data || err.message);
+    }
   };
 
   return (
     <FavoritesContext.Provider
       value={{
         favorites,
-        toggleFavorite,
+        addFavorite,
         isFavorite,
         removeFavorite,
         clearFavorites,

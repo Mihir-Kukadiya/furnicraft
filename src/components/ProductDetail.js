@@ -21,7 +21,8 @@ const ProductDetail = ({
   onClose,
   product,
   onAddToCart,
-  onToggleFavorite,
+  onAddFavorite,
+  onRemoveFavorite,
   isFavorite,
 }) => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -70,7 +71,11 @@ const ProductDetail = ({
       return;
     }
 
-    onToggleFavorite?.(product);
+    if (favorited) {
+      onRemoveFavorite?.({ productId: product._id });
+    } else {
+      onAddFavorite?.(product);
+    }
   };
 
   const favorited = isFavorite?.(product);

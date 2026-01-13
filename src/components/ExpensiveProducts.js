@@ -42,9 +42,7 @@ const ExpensiveProducts = () => {
   useEffect(() => {
     const fetchExpensiveProducts = async () => {
       try {
-        const res = await axiosInstance.get(
-          "/expensive-products"
-        );
+        const res = await axiosInstance.get("/expensive-products");
 
         const sortedByPrice = [...res.data].sort(
           (a, b) => Number(b.price) - Number(a.price)
@@ -110,10 +108,10 @@ const ExpensiveProducts = () => {
 
   // ========================= favorites ============================
 
-  const { favorites, toggleFavorite } = useFavorites();
+  const { favorites, addFavorite, removeFavorite } = useFavorites();
 
   const isFavorited = (product) =>
-    favorites.some((fav) => fav.name === product.name);
+    favorites.some((fav) => fav.productId === product._id);
 
   // ============== without login not add products in cart ===========
 
@@ -787,7 +785,11 @@ const ExpensiveProducts = () => {
                                     return;
                                   }
 
-                                  toggleFavorite(product);
+                                  if (isFavorited(product)) {
+                                    removeFavorite({ productId: product._id });
+                                  } else {
+                                    addFavorite(product);
+                                  }
                                 }}
                               >
                                 {isFavorited(product) ? (
@@ -813,7 +815,8 @@ const ExpensiveProducts = () => {
           onClose={handleCloseProduct}
           product={selectedProduct}
           onAddToCart={addToCart}
-          onToggleFavorite={toggleFavorite}
+          onAddFavorite={addFavorite}
+          onRemoveFavorite={removeFavorite}
           isFavorite={isFavorited}
         />
       </Box>

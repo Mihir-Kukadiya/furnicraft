@@ -15,6 +15,6 @@ router.post("/register", registerUser);
 router.post("/change-password", changePassword);
 
 router.put("/admin/update", protect, adminOnly, updateAdminProfile);
-router.post("/create-admin", createAdmin);
+router.post("/create-admin", protect, adminOnly, createAdmin);
 
 export default router;

@@ -114,7 +114,12 @@ const Products = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("info");
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  const { toggleFavorite, isFavorite, message: favMsg } = useFavorites();
+  const {
+    addFavorite,
+    removeFavorite,
+    isFavorite,
+    message: favMsg,
+  } = useFavorites();
 
   React.useEffect(() => {
     if (favMsg) {
@@ -964,7 +969,11 @@ const Products = () => {
                                   return;
                                 }
 
-                                toggleFavorite(product);
+                                if (isFavorite(product)) {
+                                  removeFavorite({ productId: product._id });
+                                } else {
+                                  addFavorite(product);
+                                }
                               }}
                             >
                               {isFavorite(product) ? (
@@ -988,7 +997,8 @@ const Products = () => {
           onClose={handleCloseProduct}
           product={selectedProduct}
           onAddToCart={addToCart}
-          onToggleFavorite={toggleFavorite}
+          onAddFavorite={addFavorite}
+          onRemoveFavorite={removeFavorite}
           isFavorite={isFavorite}
         />
       </Box>
