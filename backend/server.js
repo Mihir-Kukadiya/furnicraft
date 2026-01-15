@@ -13,13 +13,30 @@ import authRoutes from "./routes/authRoutes.js";
 dotenv.config();
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-mongoose
-  .connect(process.env.MONGO_URL)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+// ✅ Prevent multiple re-connects in serverless
+let isConnected = false;
+
+const connectDB = async () => {
+  if (isConnected) return;
+
+  try {
+    await mongoose.connect(process.env.MONGO_URL);
+    isConnected = true;
+    console.log("✅ MongoDB connected");
+  } catch (err) {
+    console.error("❌ MongoDB connection error:", err);
+  }
+};
+
+// ✅ Middleware: Connect DB before every request
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
 
 app.use("/api/products", productRoutes);
 app.use("/api/expensive-products", expensiveProductRoutes);
@@ -29,5 +46,8 @@ app.use("/api/favorites", favoriteRoutes);
 app.use("/api/addresses", addressRoutes);
 app.use("/api/auth", authRoutes);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// ❌ REMOVE app.listen (DON'T USE IN SERVERLESS)
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+export default app;
