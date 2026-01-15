@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import axiosInstance from "../utils/axiosInstance";
 
 const CartContext = createContext();
-const API = "http://localhost:3000/api/cart";
 
 const CartProvider = ({ children }) => {
 
@@ -25,7 +24,7 @@ const CartProvider = ({ children }) => {
   useEffect(() => {
     if (!email) return;
     axiosInstance
-      .get(`${API}/${email}`)
+      .get(`/cart/${email}`)
       .then((res) => setCartItems(res.data))
       .catch(() => setCartItems([]));
   }, [email]);
@@ -37,7 +36,7 @@ const CartProvider = ({ children }) => {
       setCartItems([]);
       return;
     }
-    await axiosInstance.delete(`${API}/clear/${email}`);
+    await axiosInstance.delete(`/cart/clear/${email}`);
     setCartItems([]);
   };
 
@@ -64,7 +63,7 @@ const CartProvider = ({ children }) => {
     };
 
     if (email) {
-      const res = await axiosInstance.post(`${API}/add`, {
+      const res = await axiosInstance.post(`/cart/add`, {
         email,
         product: normalized,
       });
@@ -87,7 +86,7 @@ const CartProvider = ({ children }) => {
       return;
     }
 
-    const res = await axiosInstance.delete(`${API}/remove`, {
+    const res = await axiosInstance.delete(`/cart/remove`, {
       data: { email, productId },
     });
 
@@ -99,7 +98,7 @@ const CartProvider = ({ children }) => {
   const updateQuantity = async (productId, quantity) => {
     if (!email) return;
 
-    const res = await axiosInstance.put(`${API}/quantity`, {
+    const res = await axiosInstance.put(`/cart/quantity`, {
       email,
       productId,
       quantity,

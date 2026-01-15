@@ -44,29 +44,25 @@ const Address = () => {
 
   // ============================= fetch address ===============================
 
-  const API = "http://localhost:3000";
-
   useEffect(() => {
-  if (!email) return;
+    if (!email) return;
 
-  axiosInstance
-    .get(`/addresses/${email}`)
-    .then((res) => setAddresses(res.data))
-    .catch((err) =>
-      console.error("Fetch address error:", err.response?.data || err.message)
-    );
-}, [email]);
-
+    axiosInstance
+      .get(`/addresses/${email}`)
+      .then((res) => setAddresses(res.data))
+      .catch((err) =>
+        console.error("Fetch address error:", err.response?.data || err.message)
+      );
+  }, [email]);
 
   const fetchAddresses = async () => {
-    const res = await axiosInstance.get(`${API}/api/addresses/${email}`);
+    const res = await axiosInstance.get(`/addresses/${email}`);
     setAddresses(res.data);
   };
 
   useEffect(() => {
     if (email) fetchAddresses();
   }, [email]);
-
 
   // ===================== Auto generate city & state when pincode is 6 digits ==================
 
@@ -132,24 +128,23 @@ const Address = () => {
 
     try {
       if (editIndex !== -1) {
-  const id = addresses[editIndex]._id;
+        const id = addresses[editIndex]._id;
 
-  const res = await axiosInstance.put(`/addresses/${id}`, payload);
+        const res = await axiosInstance.put(`/addresses/${id}`, payload);
 
-  setAddresses((prev) =>
-    prev.map((a, i) => (i === editIndex ? res.data : a))
-  );
-  setEditIndex(-1);
-} else {
-  if (addresses.length >= 2) {
-    alert("You can only save up to 2 addresses.");
-    return;
-  }
+        setAddresses((prev) =>
+          prev.map((a, i) => (i === editIndex ? res.data : a))
+        );
+        setEditIndex(-1);
+      } else {
+        if (addresses.length >= 2) {
+          alert("You can only save up to 2 addresses.");
+          return;
+        }
 
-  const res = await axiosInstance.post(`/addresses`, payload);
-  setAddresses((prev) => [...prev, res.data]);
-}
-
+        const res = await axiosInstance.post(`/addresses`, payload);
+        setAddresses((prev) => [...prev, res.data]);
+      }
 
       setForm({
         name: "",
@@ -165,7 +160,6 @@ const Address = () => {
     }
   };
 
-
   // ========================== Edit address =============================
 
   const handleEdit = (index) => {
@@ -176,11 +170,11 @@ const Address = () => {
   // ========================== Delete address =============================
 
   const handleDelete = async (index) => {
-  const id = addresses[index]._id;
+    const id = addresses[index]._id;
 
-  await axiosInstance.delete(`/addresses/${id}`);
-  setAddresses((prev) => prev.filter((_, i) => i !== index));
-};
+    await axiosInstance.delete(`/addresses/${id}`);
+    setAddresses((prev) => prev.filter((_, i) => i !== index));
+  };
 
   // ===================================================================
 

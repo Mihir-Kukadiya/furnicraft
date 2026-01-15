@@ -55,7 +55,7 @@ const Login = () => {
     }
 
     axios
-      .post("http://localhost:3000/api/auth/login", { email, password })
+      .post(`${process.env.REACT_APP_API_BASE_URL}/auth/login`, { email, password })
       .then((res) => {
         const { token, user } = res.data;
 
@@ -104,7 +104,7 @@ const Login = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/auth/change-password",
+        `${process.env.REACT_APP_API_BASE_URL}/auth/change-password`,
         {
           email: forgotEmail,
           securityAnswer,

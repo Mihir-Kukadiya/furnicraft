@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.post("/login", login);
 router.post("/register", registerUser);
-router.post("/change-password", changePassword);
+router.post("/change-password", protect, changePassword);
 
 router.put("/admin/update", protect, adminOnly, updateAdminProfile);
 router.post("/create-admin", protect, adminOnly, createAdmin);
