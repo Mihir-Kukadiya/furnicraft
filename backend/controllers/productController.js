@@ -16,12 +16,28 @@ export const getProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   try {
-    const product = new Product(req.body);
+    const { name, price, category, description } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "Image is required" });
+    }
+
+    const product = new Product({
+      name,
+      price,
+      category,
+      description,
+      img: req.file.path,
+    });
+
     const savedProduct = await product.save();
     res.status(201).json(savedProduct);
   } catch (err) {
     console.error("❌ Save product error:", err);
-    res.status(500).json({ error: "Failed to save product", details: err.message });
+    res.status(500).json({
+      error: "Failed to save product",
+      details: err.message,
+    });
   }
 };
 
@@ -29,14 +45,33 @@ export const createProduct = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
   try {
-    const updated = await Product.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const updateData = { ...req.body };
+
+    // ✅ If new image uploaded → use Cloudinary URL
+    if (req.file) {
+      updateData.img = req.file.path;
+    }
+
+    const updated = await Product.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
     res.json(updated);
   } catch (err) {
     console.error("❌ Update product error:", err);
-    res.status(500).json({ error: "Update failed", details: err.message });
+    res.status(500).json({
+      error: "Update failed",
+      details: err.message,
+    });
   }
 };
 

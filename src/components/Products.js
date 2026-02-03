@@ -36,7 +36,7 @@ import { useCart } from "./CartProvider";
 
 const chunkArray = (arr, size) =>
   Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
-    arr.slice(i * size, i * size + size)
+    arr.slice(i * size, i * size + size),
   );
 
 // =============================================================
@@ -76,19 +76,12 @@ const Products = () => {
 
   // ============================== admin ==============================
 
-  const role = sessionStorage.getItem("role"); // "admin" | "user"
+  const role = sessionStorage.getItem("role");
   const isAdmin = role === "admin";
 
   // ========================= add product popup =========================
 
   const [productsData, setProductsData] = useState([]);
-
-  useEffect(() => {
-    axiosInstance
-      .get("/products")
-      .then((res) => setProductsData(res.data))
-      .catch((err) => console.error(err));
-  }, []);
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
@@ -180,13 +173,13 @@ const Products = () => {
     sortedProducts.sort(
       (a, b) =>
         parseInt(String(a.price).replace(/[^\d]/g, "")) -
-        parseInt(String(b.price).replace(/[^\d]/g, ""))
+        parseInt(String(b.price).replace(/[^\d]/g, "")),
     );
   } else if (sort === "hightolow") {
     sortedProducts.sort(
       (a, b) =>
         parseInt(String(b.price).replace(/[^\d]/g, "")) -
-        parseInt(String(a.price).replace(/[^\d]/g, ""))
+        parseInt(String(a.price).replace(/[^\d]/g, "")),
     );
   }
 
@@ -245,7 +238,7 @@ const Products = () => {
                 gap: 2,
               }}
             >
-              <TextField
+              {/* <TextField
                 label="Image URL"
                 value={newProduct.img}
                 onChange={(e) =>
@@ -257,7 +250,25 @@ const Products = () => {
                   borderRadius: 2,
                   boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
                 }}
-              />
+              /> */}
+              <Button variant="outlined" component="label">
+                Choose Image
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, img: e.target.files[0] })
+                  }
+                />
+              </Button>
+
+              {newProduct.img && newProduct.img.name && (
+                <Typography sx={{ mt: 1 }}>
+                  Selected: {newProduct.img.name}
+                </Typography>
+              )}
+
               <TextField
                 label="Product Name"
                 value={newProduct.name}
@@ -325,24 +336,51 @@ const Products = () => {
 
               <Button
                 variant="contained"
-                onClick={() => {
-                  axiosInstance
-                    .post("/products", newProduct)
-                    .then((res) => {
-                      setProductsData([...productsData, res.data]);
-                      setSnackbarMessage("Product added successfully");
-                      setSnackbarSeverity("success");
-                      setOpenSnackbar(true);
-                      setIsAddDialogOpen(false);
-                    })
-                    .catch((err) => {
-                      console.error(err);
-                      setSnackbarMessage(
-                        err.response?.data?.message || "Error saving product"
-                      );
-                      setSnackbarSeverity("error");
-                      setOpenSnackbar(true);
+                onClick={async () => {
+                  try {
+                    const formData = new FormData();
+
+                    formData.append("name", newProduct.name);
+                    formData.append("price", newProduct.price);
+                    formData.append("category", newProduct.category);
+                    formData.append("description", newProduct.description);
+
+                    // IMPORTANT – send FILE, not cloudinary URL
+                    formData.append("img", newProduct.img);
+
+                    const res = await axiosInstance.post(
+                      "/products",
+                      formData,
+                      {
+                        headers: {
+                          "Content-Type": "multipart/form-data",
+                        },
+                      },
+                    );
+
+                    setProductsData([...productsData, res.data]);
+
+                    setSnackbarMessage("Product added successfully");
+                    setSnackbarSeverity("success");
+                    setOpenSnackbar(true);
+
+                    setNewProduct({
+                      name: "",
+                      price: "",
+                      img: "",
+                      category: "",
+                      description: "",
                     });
+
+                    setIsAddDialogOpen(false);
+                  } catch (err) {
+                    console.error(err);
+                    setSnackbarMessage(
+                      err.response?.data?.message || "Error saving product",
+                    );
+                    setSnackbarSeverity("error");
+                    setOpenSnackbar(true);
+                  }
                 }}
                 sx={{
                   mt: 1,
@@ -416,24 +454,29 @@ const Products = () => {
                   width: "100%",
                 }}
               >
-                <TextField
-                  label="Image URL"
-                  value={editProduct.img}
-                  onChange={(e) => handleEditFieldChange("img", e.target.value)}
-                  fullWidth
-                  sx={{
-                    backgroundColor: theme.palette.background.paper,
-                    borderRadius: 2,
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
-                    input: { color: theme.palette.text.primary },
-                    "& .MuiInputLabel-root": {
-                      color: theme.palette.text.secondary,
-                    },
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: theme.palette.divider,
-                    },
-                  }}
-                />
+                <Button variant="outlined" component="label">
+                  Change Image
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={(e) =>
+                      setEditProduct({ ...editProduct, img: e.target.files[0] })
+                    }
+                  />
+                </Button>
+
+                {editProduct.img instanceof File ? (
+                  <Typography sx={{ mt: 1 }}>
+                    Selected: {editProduct.img.name}
+                  </Typography>
+                ) : (
+                  <img
+                    src={editProduct.img}
+                    alt="current"
+                    style={{ width: "120px", marginTop: "10px" }}
+                  />
+                )}
 
                 <TextField
                   label="Product Name"
@@ -530,29 +573,50 @@ const Products = () => {
 
                 <Button
                   variant="contained"
-                  onClick={() => {
-                    axiosInstance
-                      .put(`/products/${editProduct._id}`, editProduct)
-                      .then((res) => {
-                        setProductsData((prev) =>
-                          prev.map((p) =>
-                            p._id === editProduct._id ? res.data : p
-                          )
-                        );
-                        setSnackbarMessage("Product updated successfully");
-                        setSnackbarSeverity("success");
-                        setOpenSnackbar(true);
-                        setIsEditDialogOpen(false);
-                      })
-                      .catch((err) => {
-                        console.error(err);
-                        setSnackbarMessage(
-                          err.response?.data?.message ||
-                            "Failed to update product"
-                        );
-                        setSnackbarSeverity("error");
-                        setOpenSnackbar(true);
-                      });
+                  onClick={async () => {
+                    try {
+                      const formData = new FormData();
+
+                      formData.append("name", editProduct.name);
+                      formData.append("price", editProduct.price);
+                      formData.append("category", editProduct.category);
+                      formData.append("description", editProduct.description);
+
+                      // only if new file selected
+                      if (editProduct.img instanceof File) {
+                        formData.append("img", editProduct.img);
+                      }
+
+                      const res = await axiosInstance.put(
+                        `/products/${editProduct._id}`,
+                        formData,
+                        {
+                          headers: {
+                            "Content-Type": "multipart/form-data",
+                          },
+                        },
+                      );
+
+                      setProductsData((prev) =>
+                        prev.map((p) =>
+                          p._id === editProduct._id ? res.data : p,
+                        ),
+                      );
+
+                      setSnackbarMessage("Product updated successfully");
+                      setSnackbarSeverity("success");
+                      setOpenSnackbar(true);
+
+                      setIsEditDialogOpen(false);
+                    } catch (err) {
+                      console.error(err);
+                      setSnackbarMessage(
+                        err.response?.data?.message ||
+                          "Failed to update product",
+                      );
+                      setSnackbarSeverity("error");
+                      setOpenSnackbar(true);
+                    }
                   }}
                   sx={{
                     mt: 1,
@@ -849,7 +913,7 @@ const Products = () => {
 
                             if (!userEmail) {
                               setSnackbarMessage(
-                                "Please log in to add items to cart"
+                                "Please log in to add items to cart",
                               );
                               setSnackbarSeverity("warning");
                               setOpenSnackbar(true);
@@ -858,7 +922,7 @@ const Products = () => {
 
                             if (isAdmin) {
                               setSnackbarMessage(
-                                "Admin cannot add products to cart"
+                                "Admin cannot add products to cart",
                               );
                               setSnackbarSeverity("warning");
                               setOpenSnackbar(true);
@@ -882,11 +946,11 @@ const Products = () => {
                                       .then(() => {
                                         setProductsData((prev) =>
                                           prev.filter(
-                                            (p) => p._id !== product._id
-                                          )
+                                            (p) => p._id !== product._id,
+                                          ),
                                         );
                                         setSnackbarMessage(
-                                          "Product deleted successfully"
+                                          "Product deleted successfully",
                                         );
                                         setSnackbarSeverity("success");
                                         setOpenSnackbar(true);
@@ -895,7 +959,7 @@ const Products = () => {
                                         console.error(err);
                                         setSnackbarMessage(
                                           err.response?.data?.message ||
-                                            "Failed to delete product"
+                                            "Failed to delete product",
                                         );
                                         setSnackbarSeverity("error");
                                         setOpenSnackbar(true);
@@ -943,8 +1007,8 @@ const Products = () => {
                                 color: isFavorite(product)
                                   ? theme.palette.error.main
                                   : theme.palette.mode === "dark"
-                                  ? "#fff"
-                                  : "#000",
+                                    ? "#fff"
+                                    : "#000",
                               }}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -953,7 +1017,7 @@ const Products = () => {
 
                                 if (!userEmail) {
                                   setSnackbarMessage(
-                                    "Please log in to use favorites"
+                                    "Please log in to use favorites",
                                   );
                                   setSnackbarSeverity("warning");
                                   setOpenSnackbar(true);
@@ -962,7 +1026,7 @@ const Products = () => {
 
                                 if (isAdmin) {
                                   setSnackbarMessage(
-                                    "Admin cannot add products to favorites"
+                                    "Admin cannot add products to favorites",
                                   );
                                   setSnackbarSeverity("warning");
                                   setOpenSnackbar(true);

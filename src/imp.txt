@@ -9,5 +9,5 @@ database = FurniCraft
 
 mongodb+srv://<username>:<password>@<cluster-url>/<database>?retryWrites=true&w=majority
 
-1. apply cloudInary for product images.
-2. home page, set multiple background images.
+1. home page, set multiple background images.
+2. change error messages in login & register.

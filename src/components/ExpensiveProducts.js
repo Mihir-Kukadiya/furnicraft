@@ -45,7 +45,7 @@ const ExpensiveProducts = () => {
         const res = await axiosInstance.get("/expensive-products");
 
         const sortedByPrice = [...res.data].sort(
-          (a, b) => Number(b.price) - Number(a.price)
+          (a, b) => Number(b.price) - Number(a.price),
         );
 
         setExpensiveProducts(sortedByPrice);
@@ -172,7 +172,7 @@ const ExpensiveProducts = () => {
                 gap: 2,
               }}
             >
-              <TextField
+              {/* <TextField
                 label="Image URL"
                 value={newProduct.img}
                 onChange={(e) =>
@@ -184,7 +184,25 @@ const ExpensiveProducts = () => {
                   borderRadius: 2,
                   boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
                 }}
-              />
+              /> */}
+              <Button variant="outlined" component="label">
+                Choose Image
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, img: e.target.files[0] })
+                  }
+                />
+              </Button>
+
+              {newProduct.img && (
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  Selected: {newProduct.img.name}
+                </Typography>
+              )}
+
               <TextField
                 label="Product Name"
                 value={newProduct.name}
@@ -254,10 +272,23 @@ const ExpensiveProducts = () => {
                 variant="contained"
                 onClick={async () => {
                   try {
-                    const res = await axiosInstance.post(
-                      "/expensive-products",
-                      { ...newProduct, price: Number(newProduct.price) }
-                    );
+                    const formData = new FormData();
+formData.append("name", newProduct.name);
+formData.append("price", newProduct.price);
+formData.append("category", newProduct.category);
+formData.append("description", newProduct.description);
+formData.append("img", newProduct.img);   // FILE
+
+const res = await axiosInstance.post(
+  "/expensive-products",
+  formData,
+  {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  }
+);
+
 
                     setExpensiveProducts((prev) => [...prev, res.data]);
 
@@ -332,26 +363,27 @@ const ExpensiveProducts = () => {
                   width: "100%",
                 }}
               >
-                <TextField
-                  label="Image URL"
-                  value={editProduct.img}
-                  onChange={(e) =>
-                    setEditProduct({ ...editProduct, img: e.target.value })
-                  }
-                  fullWidth
-                  sx={{
-                    backgroundColor: theme.palette.background.paper,
-                    borderRadius: 2,
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
-                    input: { color: theme.palette.text.primary },
-                    "& .MuiInputLabel-root": {
-                      color: theme.palette.text.secondary,
-                    },
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: theme.palette.divider,
-                    },
-                  }}
-                />
+                <Button variant="outlined" component="label">
+  Change Image
+  <input
+    type="file"
+    hidden
+    accept="image/*"
+    onChange={(e) =>
+      setEditProduct({ ...editProduct, img: e.target.files[0] })
+    }
+  />
+</Button>
+
+{editProduct.img && (
+  <Typography variant="body2" sx={{ mt: 1 }}>
+    {editProduct.img instanceof File
+      ? `Selected: ${editProduct.img.name}`
+      : "Current image already uploaded"}
+  </Typography>
+)}
+
+
 
                 <TextField
                   label="Product Name"
@@ -456,14 +488,32 @@ const ExpensiveProducts = () => {
                 <Button
                   variant="contained"
                   onClick={async () => {
-                    const res = await axiosInstance.put(
-                      `/expensive-products/${editProduct._id}`,
-                      { ...editProduct, price: Number(editProduct.price) }
-                    );
+                    const formData = new FormData();
+
+formData.append("name", editProduct.name);
+formData.append("price", editProduct.price);
+formData.append("category", editProduct.category);
+formData.append("description", editProduct.description);
+
+// only if new file selected
+if (editProduct.img instanceof File) {
+  formData.append("img", editProduct.img);
+}
+
+const res = await axiosInstance.put(
+  `/expensive-products/${editProduct._id}`,
+  formData,
+  {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  }
+);
+
                     setExpensiveProducts((prev) =>
                       prev.map((p) =>
-                        p._id === editProduct._id ? res.data : p
-                      )
+                        p._id === editProduct._id ? res.data : p,
+                      ),
                     );
                     setIsEditDialogOpen(false);
                   }}
@@ -661,7 +711,7 @@ const ExpensiveProducts = () => {
 
                               if (!userEmail) {
                                 setSnackbarMessage(
-                                  "Please log in to add items to your cart"
+                                  "Please log in to add items to your cart",
                                 );
                                 setSnackbarSeverity("warning");
                                 setOpenSnackbar(true);
@@ -670,7 +720,7 @@ const ExpensiveProducts = () => {
 
                               if (isAdmin) {
                                 setSnackbarMessage(
-                                  "Admin cannot add items to cart"
+                                  "Admin cannot add items to cart",
                                 );
                                 setSnackbarSeverity("warning");
                                 setOpenSnackbar(true);
@@ -691,24 +741,24 @@ const ExpensiveProducts = () => {
                                       e.stopPropagation();
                                       axiosInstance
                                         .delete(
-                                          `/expensive-products/${product._id}`
+                                          `/expensive-products/${product._id}`,
                                         )
 
                                         .then(() => {
                                           setExpensiveProducts((prev) =>
                                             prev.filter(
-                                              (p) => p._id !== product._id
-                                            )
+                                              (p) => p._id !== product._id,
+                                            ),
                                           );
                                           setSnackbarMessage(
-                                            "Product deleted successfully"
+                                            "Product deleted successfully",
                                           );
                                           setSnackbarSeverity("success");
                                           setOpenSnackbar(true);
                                         })
                                         .catch(() => {
                                           setSnackbarMessage(
-                                            "Failed to delete product"
+                                            "Failed to delete product",
                                           );
                                           setSnackbarSeverity("error");
                                           setOpenSnackbar(true);
@@ -759,8 +809,8 @@ const ExpensiveProducts = () => {
                                   color: isFavorited(product)
                                     ? theme.palette.error.main
                                     : theme.palette.mode === "dark"
-                                    ? "#fff"
-                                    : "#000",
+                                      ? "#fff"
+                                      : "#000",
                                 }}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -769,7 +819,7 @@ const ExpensiveProducts = () => {
 
                                   if (!userEmail) {
                                     setSnackbarMessage(
-                                      "Please log in to add items to favorites"
+                                      "Please log in to add items to favorites",
                                     );
                                     setSnackbarSeverity("warning");
                                     setOpenSnackbar(true);
@@ -778,7 +828,7 @@ const ExpensiveProducts = () => {
 
                                   if (isAdmin) {
                                     setSnackbarMessage(
-                                      "Admin cannot add items in favorites"
+                                      "Admin cannot add items in favorites",
                                     );
                                     setSnackbarSeverity("warning");
                                     setOpenSnackbar(true);

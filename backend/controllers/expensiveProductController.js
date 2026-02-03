@@ -1,6 +1,6 @@
 import ExpensiveProduct from "../models/ExpensiveProduct.js";
 
-// GET all expensive products
+// ================= GET =================
 export const getExpensiveProducts = async (req, res) => {
   try {
     const products = await ExpensiveProduct.find().sort({ createdAt: -1 });
@@ -10,37 +10,57 @@ export const getExpensiveProducts = async (req, res) => {
   }
 };
 
-// POST new expensive product
+// ================= CREATE =================
 export const createExpensiveProduct = async (req, res) => {
   try {
-    const product = new ExpensiveProduct(req.body);
+    const { name, price, category, description } = req.body;
+
+    // ✅ Cloudinary file check
+    if (!req.file) {
+      return res.status(400).json({ message: "Image is required" });
+    }
+
+    const product = new ExpensiveProduct({
+      name,
+      price,
+      category,
+      description,
+      img: req.file.path,   // ✅ Cloudinary URL
+    });
+
     const savedProduct = await product.save();
     res.status(201).json(savedProduct);
+
   } catch (err) {
+    console.error("Expensive product save error:", err);
     res.status(400).json({ message: err.message });
   }
 };
 
-// ✅ UPDATE expensive product
+// ================= UPDATE =================
 export const updateExpensiveProduct = async (req, res) => {
   try {
-    const updatedProduct = await ExpensiveProduct.findByIdAndUpdate(
+    const updateData = { ...req.body };
+
+    // ✅ If new image uploaded
+    if (req.file) {
+      updateData.img = req.file.path;
+    }
+
+    const updated = await ExpensiveProduct.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
 
-    if (!updatedProduct) {
-      return res.status(404).json({ message: "Expensive product not found" });
-    }
+    res.json(updated);
 
-    res.json(updatedProduct);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: "Update failed" });
   }
 };
 
-// DELETE expensive product
+// ================= DELETE =================
 export const deleteExpensiveProduct = async (req, res) => {
   try {
     const deleted = await ExpensiveProduct.findByIdAndDelete(req.params.id);
@@ -50,6 +70,7 @@ export const deleteExpensiveProduct = async (req, res) => {
     }
 
     res.json({ message: "Expensive product deleted" });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
