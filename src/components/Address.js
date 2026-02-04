@@ -51,24 +51,25 @@ const Address = () => {
       .get(`/addresses/${email}`)
       .then((res) => setAddresses(res.data))
       .catch((err) =>
-        console.error("Fetch address error:", err.response?.data || err.message)
+        console.error(
+          "Fetch address error:",
+          err.response?.data || err.message,
+        ),
       );
   }, [email]);
 
   const fetchAddresses = useCallback(async () => {
-  try {
-    const res = await axiosInstance.get(`/addresses/${email}`);
-    setAddresses(res.data);
-  } catch (err) {
-    console.error("Fetch address error:", err.response?.data || err.message);
-  }
-}, [email]);
-
+    try {
+      const res = await axiosInstance.get(`/addresses/${email}`);
+      setAddresses(res.data);
+    } catch (err) {
+      console.error("Fetch address error:", err.response?.data || err.message);
+    }
+  }, [email]);
 
   useEffect(() => {
-  if (email) fetchAddresses();
-}, [email, fetchAddresses]);
-
+    if (email) fetchAddresses();
+  }, [email, fetchAddresses]);
 
   // ===================== Auto generate city & state when pincode is 6 digits ==================
 
@@ -79,7 +80,7 @@ const Address = () => {
     if (name === "pincode" && value.length === 6) {
       try {
         const res = await fetch(
-          `https://api.postalpincode.in/pincode/${value}`
+          `https://api.postalpincode.in/pincode/${value}`,
         );
         const data = await res.json();
         if (data[0].Status === "Success") {
@@ -139,7 +140,7 @@ const Address = () => {
         const res = await axiosInstance.put(`/addresses/${id}`, payload);
 
         setAddresses((prev) =>
-          prev.map((a, i) => (i === editIndex ? res.data : a))
+          prev.map((a, i) => (i === editIndex ? res.data : a)),
         );
         setEditIndex(-1);
       } else {
