@@ -4,13 +4,10 @@ import {
   Card,
   Typography,
   Divider,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Button,
+  Stack,
+  Chip,
+  CardContent,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
@@ -23,8 +20,9 @@ const CompleteOrders = () => {
     const fetchCompletedOrders = async () => {
       try {
         const res = await axiosInstance.get("/orders");
+
         const completed = res.data.filter(
-          (order) => order.status === "Completed"
+          (order) => order.status === "Completed",
         );
 
         const formatted = completed.map((order) => ({
@@ -45,41 +43,21 @@ const CompleteOrders = () => {
 
   const formatDate = (date) => {
     if (!date) return "—";
-    const d = new Date(date);
-    return d.toLocaleDateString("en-GB");
+    return new Date(date).toLocaleDateString();
   };
 
+  // =====================================================
+
   return (
-    <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, mt: { xs: 6, md: 8 } }}>
-      <Typography
-        variant="h4"
-        fontWeight="bold"
-        gutterBottom
-        sx={{
-          fontSize: { xs: "1.5rem", md: "2rem" },
-          textAlign: "center",
-          paddingTop: { xs: "30px", md: "0px" },
-        }}
-      >
+    <Box sx={{ p: 2, mt: 8 }}>
+      <Typography variant="h4" fontWeight="bold" textAlign="center">
         Completed Orders
       </Typography>
-      <Divider sx={{ mb: 2 }} />
 
-      <Box
-        sx={{
-          textAlign: { xs: "center", sm: "right" },
-          mb: 2,
-        }}
-      >
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate("/orders")}
-          sx={{
-            width: { xs: "100%", sm: "auto" },
-            maxWidth: "200px",
-          }}
-        >
+      <Divider sx={{ my: 2 }} />
+
+      <Box textAlign="right" mb={2}>
+        <Button variant="contained" onClick={() => navigate("/orders")}>
           Back to All Orders
         </Button>
       </Box>
@@ -87,68 +65,79 @@ const CompleteOrders = () => {
       {orders.length === 0 ? (
         <Typography textAlign="center">No completed orders found.</Typography>
       ) : (
-        <Box sx={{ width: "100%", overflowX: "auto" }}>
-          <TableContainer component={Card} sx={{ minWidth: 650 }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    <b>Order ID</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Completed Date</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Customer Name</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Customer Email</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Items</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Total</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Address</b>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {orders.map((order) => (
-                  <TableRow key={order._id}>
-                    <TableCell>{order._id}</TableCell>
-                    <TableCell>
-                      {formatDate(order.completedAt || order.updatedAt)}
-                    </TableCell>
-                    <TableCell>{order.customerName}</TableCell>
-                    <TableCell>{order.customerEmail}</TableCell>
-                    <TableCell>
-                      {order.items.map((i, idx) => (
-                        <div key={idx}>
-                          {i.name} (x{i.quantity})
-                        </div>
-                      ))}
-                    </TableCell>
-                    <TableCell>₹{order.total}</TableCell>
-                    <TableCell>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          maxWidth: 220,
-                          whiteSpace: "normal",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {order.address}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
+          {orders.map((order) => (
+            <Box
+              key={order._id}
+              sx={{
+                width: {
+                  xs: "100%",
+                  sm: "48%",
+                  md: "48%",
+                },
+              }}
+            >
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  boxShadow: 3,
+                  border: "1px solid #ccc",
+                }}
+              >
+                <CardContent>
+                  {/* HEADER */}
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    flexWrap="wrap"
+                    gap={1}
+                  >
+                    <Typography fontWeight="bold">
+                      Order ID: {order._id}
+                    </Typography>
+
+                    <Chip label="Completed" color="success" />
+                  </Stack>
+
+                  <Divider sx={{ my: 1 }} />
+
+                  <Typography variant="body2">
+                    📅 Completed:{" "}
+                    {formatDate(order.completedAt || order.updatedAt)}
+                  </Typography>
+
+                  <Typography mt={1}>👤 {order.customerName}</Typography>
+
+                  <Typography>📧 {order.customerEmail}</Typography>
+
+                  {/* ITEMS */}
+                  <Box mt={1}>
+                    <Typography fontWeight="bold">Items:</Typography>
+
+                    {order.items.map((i, idx) => (
+                      <Typography key={idx} variant="body2">
+                        • {i.name} (x{i.quantity})
                       </Typography>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                    ))}
+                  </Box>
+
+                  <Typography mt={1}>💵 Total: ₹{order.total}</Typography>
+
+                  <Typography variant="body2">📍 {order.address}</Typography>
+                </CardContent>
+              </Card>
+            </Box>
+          ))}
         </Box>
       )}
     </Box>

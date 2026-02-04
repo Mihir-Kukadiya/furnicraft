@@ -63,9 +63,13 @@ const Register = () => {
       "string.empty": "Please select a security question.",
     }),
 
-    securityAnswer: Joi.string().required().messages({
-      "string.empty": "Answer is required.",
-    }),
+    securityAnswer: Joi.string()
+      .pattern(/^[A-Za-z\s]+$/)
+      .required()
+      .messages({
+        "string.pattern.base": "Security answer must contain only letters.",
+        "string.empty": "Answer is required.",
+      }),
   });
 
   // ======================= input fields =============================
@@ -105,7 +109,7 @@ const Register = () => {
         securityQuestion,
         securityAnswer: answer,
       },
-      { abortEarly: true }
+      { abortEarly: true },
     );
 
     if (validationError) {

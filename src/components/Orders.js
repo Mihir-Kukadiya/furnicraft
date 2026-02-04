@@ -4,14 +4,10 @@ import {
   Card,
   Typography,
   Divider,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Button,
   Stack,
+  Chip,
+  CardContent,
 } from "@mui/material";
 import emailjs from "emailjs-com";
 import Swal from "sweetalert2";
@@ -22,16 +18,17 @@ const Orders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
 
-  // ======================= fetch orders from backend =======================
+  // ======================= fetch orders =======================
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const res = await axiosInstance.get("/orders");
         const pendingOrders = res.data.filter(
-          (order) => order.status === "Pending"
+          (order) => order.status === "Pending",
         );
+
         setOrders(pendingOrders);
-        localStorage.setItem("orders", JSON.stringify(pendingOrders));
       } catch (err) {
         console.error("Failed to fetch orders:", err);
       }
@@ -40,7 +37,7 @@ const Orders = () => {
     fetchOrders();
   }, []);
 
-  // ======================= update order status [ Complete ] =======================
+  // ======================= Complete =======================
 
   const markAsCompleted = async (order) => {
     try {
@@ -57,25 +54,22 @@ const Orders = () => {
           order_id: order._id,
           order_total: order.total,
         },
-        "j4TLiqXB52zF5dvpD"
+        "j4TLiqXB52zF5dvpD",
       );
 
-      const updatedOrders = orders.filter((o) => o._id !== order._id);
-      setOrders(updatedOrders);
-      localStorage.setItem("orders", JSON.stringify(updatedOrders));
+      setOrders(orders.filter((o) => o._id !== order._id));
 
       Swal.fire(
         "Completed!",
         "Order completed & email sent to customer.",
-        "success"
+        "success",
       );
     } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "Order updated but email failed to send.", "warning");
+      Swal.fire("Error", "Order updated but email failed.", "warning");
     }
   };
 
-  // ======================= delete order =======================
+  // ======================= Delete =======================
 
   const deleteOrder = async (id) => {
     const result = await Swal.fire({
@@ -92,60 +86,35 @@ const Orders = () => {
 
     try {
       await axiosInstance.delete(`/orders/${id}`);
-
-      const filtered = orders.filter((o) => o._id !== id);
-      setOrders(filtered);
-      localStorage.setItem("orders", JSON.stringify(filtered));
+      setOrders(orders.filter((o) => o._id !== id));
 
       Swal.fire("Deleted!", "Order has been deleted.", "success");
     } catch (error) {
-      console.error(
-        "Failed to delete order:",
-        error.response?.data || error.message
-      );
-      Swal.fire("Error", "Failed to delete order from server.", "error");
+      Swal.fire("Error", "Failed to delete order.", "error");
     }
   };
 
-  // ======================= date =======================
+  // ======================= Date =======================
 
   const formatDate = (date) => {
-    const d = new Date(date);
-    return d.toLocaleDateString("en-GB"); // DD/MM/YYYY
+    return new Date(date).toLocaleDateString();
   };
 
-  // =======================================================================
+  // =====================================================
 
   return (
-    <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, mt: { xs: 6, md: 8 } }}>
-      <Typography
-        variant="h4"
-        fontWeight="bold"
-        gutterBottom
-        sx={{
-          fontSize: { xs: "1.5rem", md: "2rem" },
-          textAlign: "center",
-          paddingTop: { xs: "30px", md: "0px" },
-        }}
-      >
+    <Box sx={{ p: 2, mt: 8 }}>
+      <Typography variant="h4" fontWeight="bold" textAlign="center">
         Pending Orders
       </Typography>
-      <Divider sx={{ mb: 2 }} />
 
-      <Box
-        sx={{
-          textAlign: { xs: "center", sm: "right" },
-          mb: 2,
-        }}
-      >
+      <Divider sx={{ my: 2 }} />
+
+      <Box textAlign="right" mb={2}>
         <Button
           variant="contained"
           color="success"
           onClick={() => navigate("/completed-orders")}
-          sx={{
-            width: { xs: "100%", sm: "auto" },
-            maxWidth: "200px",
-          }}
         >
           Completed Orders
         </Button>
@@ -154,117 +123,104 @@ const Orders = () => {
       {orders.length === 0 ? (
         <Typography textAlign="center">No pending orders found.</Typography>
       ) : (
-        <Box sx={{ width: "100%", overflowX: "auto" }}>
-          <TableContainer component={Card} sx={{ minWidth: 650 }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    <b>Order ID</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Date</b>
-                  </TableCell>
-
-                  <TableCell>
-                    <b>Customer Name</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Customer Email</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Items</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Total</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Status</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Address</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Actions</b>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {orders.map((order) => (
-                  <TableRow
-                    key={order._id}
-                    sx={{ "& td": { wordBreak: "break-word" } }}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
+          {orders.map((order) => (
+            <Box
+              key={order._id}
+              sx={{
+                width: {
+                  xs: "100%",
+                  sm: "48%",
+                  md: "48%",
+                },
+              }}
+            >
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  boxShadow: 3,
+                  border: "1px solid #ccc",
+                }}
+              >
+                <CardContent>
+                  {/* HEADER */}
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    flexWrap="wrap"
+                    gap={1}
                   >
-                    <TableCell>{order._id}</TableCell>
-                    <TableCell>
-                      {formatDate(order.createdAt || new Date())}
-                    </TableCell>
-                    <TableCell>{order.customerName}</TableCell>
-                    <TableCell>{order.customerEmail}</TableCell>
-                    <TableCell>
-                      {order.items.map((i) => (
-                        <div key={i.name}>
-                          {i.name} (x{i.quantity})
-                        </div>
-                      ))}
-                    </TableCell>
-                    <TableCell>₹{order.total}</TableCell>
-                    <TableCell>{order.status}</TableCell>
-                    <TableCell>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          maxWidth: 220,
-                          whiteSpace: "normal",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {order.address}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Stack
-                        direction={{ xs: "column", sm: "row" }}
-                        spacing={1}
-                        alignItems="stretch"
-                        sx={{ minWidth: 120 }}
-                      >
-                        <Button
-                          size="small"
-                          variant="contained"
-                          sx={{
-                            backgroundColor: "#0d6efd",
-                            "&:hover": { backgroundColor: "#0b5ed7" },
-                            whiteSpace: "nowrap",
-                            flex: 1,
-                            minWidth: "90px",
-                          }}
-                          onClick={() => markAsCompleted(order)}
-                        >
-                          Complete
-                        </Button>
+                    <Typography fontWeight="bold">
+                      Order ID: {order._id}
+                    </Typography>
 
-                        <Button
-                          size="small"
-                          variant="contained"
-                          sx={{
-                            backgroundColor: "#6f42c1",
-                            "&:hover": { backgroundColor: "#5a379b" },
-                            whiteSpace: "nowrap",
-                            flex: 1,
-                            minWidth: "90px",
-                          }}
-                          onClick={() => deleteOrder(order._id)}
-                        >
-                          Delete
-                        </Button>
-                      </Stack>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                    <Chip label={order.status} color="warning" />
+                  </Stack>
+
+                  <Divider sx={{ my: 1 }} />
+
+                  <Typography variant="body2">
+                    📅 Date: {formatDate(order.createdAt)}
+                  </Typography>
+
+                  <Typography mt={1}>👤 {order.customerName}</Typography>
+
+                  <Typography>📧 {order.customerEmail}</Typography>
+
+                  {/* ITEMS */}
+                  <Box mt={1}>
+                    <Typography fontWeight="bold">Items:</Typography>
+
+                    {order.items.map((i) => (
+                      <Typography key={i.name} variant="body2">
+                        • {i.name} (x{i.quantity})
+                      </Typography>
+                    ))}
+                  </Box>
+
+                  <Typography mt={1}>💵 Total: ₹{order.total}</Typography>
+
+                  <Typography variant="body2">📍 {order.address}</Typography>
+
+                  {/* ACTIONS */}
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    mt={2}
+                    justifyContent="flex-end"
+                  >
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      onClick={() => markAsCompleted(order)}
+                    >
+                      Complete
+                    </Button>
+
+                    <Button
+                      variant="contained"
+                      color="error"
+                      size="small"
+                      onClick={() => deleteOrder(order._id)}
+                    >
+                      Delete
+                    </Button>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Box>
+          ))}
         </Box>
       )}
     </Box>

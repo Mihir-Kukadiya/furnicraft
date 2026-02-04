@@ -8,29 +8,27 @@ export const login = async (req, res) => {
   try {
     const account = await Auth.findOne({ email });
     if (!account) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "User not found" });
     }
 
     const isMatch = await bcrypt.compare(password, account.password);
+
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "Password is incorrect" });
     }
 
     const token = jwt.sign(
       {
         id: account._id,
         role: account.role,
-        email: account.email, // ✅ useful for debugging
+        email: account.email,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
 
     // ✅ LOG TOKEN BASED ON ROLE
-    console.log(
-      `🔐 ${account.role.toUpperCase()} JWT TOKEN:`,
-      token
-    );
+    console.log(`🔐 ${account.role.toUpperCase()} JWT TOKEN:`, token);
 
     res.json({
       message: `${
@@ -139,7 +137,6 @@ export const updateAdminProfile = async (req, res) => {
     res.status(500).json({ message: "Failed to update admin profile" });
   }
 };
-
 
 // CREATE ADMIN (ONE TIME)
 export const createAdmin = async (req, res) => {

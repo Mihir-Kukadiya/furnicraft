@@ -1,6 +1,9 @@
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+
 import Navbar from "./components/Navbar";
 import Home from "./components/Home";
 import Products from "./components/Products";
@@ -24,6 +27,10 @@ import CartProvider from "./components/CartProvider";
 import FavoritesProvider from "./components/FavoritesProvider";
 import { FiltersProvider } from "./components/FiltersContext";
 import ThemeContextProvider from "./theme/ThemeContext";
+
+const stripePromise = loadStripe(
+  "pk_test_51SPyUyGxAER71LsTe8HHiMH0QyF957Kj4twIcCYcODflhUNrzNowcPSQFhCnZDhQRNKOo67SdY0DZYRBWGwqWlWE00ChuCzFHf",
+);
 
 const App = () => {
   return (
@@ -53,7 +60,14 @@ const App = () => {
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/favorites" element={<Favorites />} />
                 <Route path="/address" element={<Address />} />
-                <Route path="/payment" element={<Payment />} />
+                <Route
+                  path="/payment"
+                  element={
+                    <Elements stripe={stripePromise}>
+                      <Payment />
+                    </Elements>
+                  }
+                />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/orders" element={<Orders />} />

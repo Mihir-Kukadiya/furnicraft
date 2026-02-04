@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -55,14 +55,20 @@ const Address = () => {
       );
   }, [email]);
 
-  const fetchAddresses = async () => {
+  const fetchAddresses = useCallback(async () => {
+  try {
     const res = await axiosInstance.get(`/addresses/${email}`);
     setAddresses(res.data);
-  };
+  } catch (err) {
+    console.error("Fetch address error:", err.response?.data || err.message);
+  }
+}, [email]);
+
 
   useEffect(() => {
-    if (email) fetchAddresses();
-  }, [email]);
+  if (email) fetchAddresses();
+}, [email, fetchAddresses]);
+
 
   // ===================== Auto generate city & state when pincode is 6 digits ==================
 

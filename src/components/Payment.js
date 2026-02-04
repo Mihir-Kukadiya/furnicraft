@@ -25,11 +25,12 @@ import axiosInstance from "../utils/axiosInstance";
 
 const Payment = () => {
   const theme = useTheme();
+
   // ======================== cart items =======================
 
   const { cartItems, clearCart } = useCart();
   const navigate = useNavigate();
-  const [paymentMethod, setPaymentMethod] = useState("upi");
+  const [paymentMethod, setPaymentMethod] = useState("card");
 
   // ======================== banks list =======================
 
@@ -76,7 +77,7 @@ const Payment = () => {
 
     if (parsedAddresses.length > 0) {
       setSelectedAddress(
-        `${parsedAddresses[0].name}, ${parsedAddresses[0].street}, ${parsedAddresses[0].city}, ${parsedAddresses[0].state} - ${parsedAddresses[0].pincode}, Ph: ${parsedAddresses[0].mobile}`
+        `${parsedAddresses[0].name}, ${parsedAddresses[0].street}, ${parsedAddresses[0].city}, ${parsedAddresses[0].state} - ${parsedAddresses[0].pincode}, Ph: ${parsedAddresses[0].mobile}`,
       );
     }
 
@@ -96,7 +97,7 @@ const Payment = () => {
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + getNumericPrice(item) * (item.quantity || 1),
-    0
+    0,
   );
 
   const discount = subtotal * 0.1;
@@ -106,6 +107,41 @@ const Payment = () => {
   const igst = 0;
   const total = subtotal - discount + cgst + sgst + igst + shipping;
 
+  const createOrderAfterPayment = async (paymentId, finalStatus) => {
+    const firstName = sessionStorage.getItem("firstName");
+    const lastName = sessionStorage.getItem("lastName");
+
+    const fullName = `${firstName} ${lastName}`;
+
+    const newOrder = {
+      customerName: fullName,
+      customerEmail: sessionStorage.getItem("email"),
+
+      items: cartItems,
+
+      subtotal,
+      discount,
+      cgst,
+      sgst,
+      igst,
+      shipping,
+      total,
+
+      address: selectedAddress,
+
+      paymentMethod,
+      paymentId,
+      status: finalStatus,
+    };
+
+    await axiosInstance.post("/orders", newOrder);
+
+    Swal.fire("Success", "Order Placed Successfully!", "success").then(() => {
+      clearCart();
+      navigate("/");
+    });
+  };
+
   // ======================== place order =======================
 
   const handlePlaceOrder = async () => {
@@ -113,107 +149,81 @@ const Payment = () => {
       Swal.fire(
         "Select Address",
         "Please choose a delivery address.",
-        "warning"
+        "warning",
       );
-      return;
-    }
-
-    if (paymentMethod === "upi" && !upiId) {
-      Swal.fire("Missing Details", "Please enter your UPI ID.", "error");
-      return;
-    }
-
-    if (
-      paymentMethod === "netbanking" &&
-      (!netBanking.bankName || !netBanking.accountNumber)
-    ) {
-      Swal.fire("Missing Details", "Please enter bank details.", "error");
-      return;
-    }
-
-    if (
-      paymentMethod === "card" &&
-      (!cardDetails.number || !cardDetails.expiry || !cardDetails.cvv)
-    ) {
-      Swal.fire("Missing Details", "Please enter all card details.", "error");
       return;
     }
 
     const customerEmail = sessionStorage.getItem("email");
+
     if (!customerEmail) {
-      Swal.fire("Not Logged In", "Please login to place an order.", "error");
+      Swal.fire("Login Required", "Please login first", "error");
       return;
     }
 
-    // ============================== new order ==============================
-
-    const firstName = sessionStorage.getItem("firstName");
-    const lastName = sessionStorage.getItem("lastName");
-    const fullName =
-      firstName && lastName ? `${firstName} ${lastName}` : "Unknown";
-
-    // Calculate what backend expects (items total only) for validation
-    const itemsTotal = cartItems.reduce(
-      (sum, item) => sum + getNumericPrice(item) * (item.quantity || 1),
-      0
-    );
-
-    const newOrder = {
-      customerName: fullName,
-      customerEmail: customerEmail,
-      items: cartItems.map((item) => ({
-        productId: item._id || null,
-        name: item.name,
-        price: Number(getNumericPrice(item).toFixed(2)),
-        quantity: item.quantity || 1,
-        image: item.image || item.img || "",
-      })),
-      subtotal: Number(subtotal.toFixed(2)),
-      discount: Number(discount.toFixed(2)),
-      cgst: Number(cgst.toFixed(2)),
-      sgst: Number(sgst.toFixed(2)),
-      igst: Number(igst.toFixed(2)),
-      shipping: Number(shipping.toFixed(2)),
-      total: Number(total.toFixed(2)), // ✅ GST INCLUDED
-
-      address: selectedAddress,
-      paymentMethod,
-      status: "Pending",
-    };
-
     try {
-      console.log("Sending order:", newOrder);
-      
-      const response = await axiosInstance.post(
-        "/orders",
-        newOrder
-      );
+      let paymentId = "COD";
+      let finalStatus = "Pending";
 
-      console.log("Order response:", response.data);
+      // ================= RAZORPAY PAYMENT =================
 
-      const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]");
-      existingOrders.push(response.data);
-      localStorage.setItem("orders", JSON.stringify(existingOrders));
+      if (
+        paymentMethod === "card" ||
+        paymentMethod === "upi" ||
+        paymentMethod === "netbanking"
+      ) {
+        const orderRes = await axiosInstance.post("/payment/create-intent", {
+          amount: total,
+        });
 
-      Swal.fire({
-        title: "Order Placed!",
-        text: `Your order of ₹${total.toFixed(
-          2
-        )} has been placed successfully.\n\nDelivery Address:\n${selectedAddress}`,
-        icon: "success",
-        confirmButtonText: "OK",
-      }).then(() => {
-        clearCart();
-        navigate("/");
-      });
+        const { orderId, amount, currency } = orderRes.data;
+
+        const firstName = sessionStorage.getItem("firstName");
+        const lastName = sessionStorage.getItem("lastName");
+        const fullName = `${firstName} ${lastName}`;
+
+        const options = {
+          key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+
+          amount,
+          currency,
+          name: "FurniCraft",
+          description: "Furniture Purchase",
+          order_id: orderId,
+
+          handler: async function (response) {
+            const verifyRes = await axiosInstance.post(
+              "/payment/verify",
+              response,
+            );
+
+            if (verifyRes.data.success) {
+              await createOrderAfterPayment(
+                response.razorpay_payment_id,
+                "Completed",
+              );
+            } else {
+              Swal.fire("Payment Failed", "Verification failed", "error");
+            }
+          },
+
+          prefill: {
+            name: fullName,
+            email: customerEmail,
+          },
+
+          theme: {
+            color: "#3399cc",
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+
+        return;
+      }
     } catch (err) {
-      console.error("Order API error:", err);
-      console.error("Error response:", err.response?.data);
-      console.error("Error status:", err.response?.status);
-      
-      const errorMsg = err.response?.data?.message || err.message || "Failed to place order";
-      
-      Swal.fire("Error", errorMsg, "error");
+      Swal.fire("Error", err.message, "error");
     }
   };
 
@@ -408,38 +418,13 @@ const Payment = () => {
             )}
 
             {paymentMethod === "card" && (
-              <Box sx={{ mt: 2 }}>
-                <TextField
-                  fullWidth
-                  label="Card Number"
-                  variant="standard"
-                  margin="dense"
-                  value={cardDetails.number}
-                  onChange={(e) =>
-                    setCardDetails({ ...cardDetails, number: e.target.value })
-                  }
-                />
-                <TextField
-                  fullWidth
-                  label="Expiry Date (MM/YY)"
-                  variant="standard"
-                  margin="dense"
-                  value={cardDetails.expiry}
-                  onChange={(e) =>
-                    setCardDetails({ ...cardDetails, expiry: e.target.value })
-                  }
-                />
-                <TextField
-                  fullWidth
-                  label="CVV"
-                  variant="standard"
-                  type="password"
-                  margin="dense"
-                  value={cardDetails.cvv}
-                  onChange={(e) =>
-                    setCardDetails({ ...cardDetails, cvv: e.target.value })
-                  }
-                />
+              <Box
+                sx={{ mt: 2, p: 2, border: "1px dashed gray", borderRadius: 2 }}
+              >
+                <Typography>
+                  Card details will be entered securely in Razorpay payment
+                  window after clicking “Place Order”.
+                </Typography>
               </Box>
             )}
           </Card>
