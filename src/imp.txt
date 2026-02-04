@@ -10,4 +10,4 @@ database = FurniCraft
 mongodb+srv://<username>:<password>@<cluster-url>/<database>?retryWrites=true&w=majority
 
 1. home page, set multiple background images.
-2. change error messages in login & register.
+2. change err messages in login & register.
