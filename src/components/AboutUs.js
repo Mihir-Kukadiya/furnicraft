@@ -75,9 +75,17 @@ const AboutUs = () => {
       role_bgcolor: "green",
     },
     {
+      name: "Aryan Gadhiya",
+      role: "Operations Manager",
+      bio: "Aryan manages production workflow and ensures timely delivery of premium furniture.",
+      contact: "aryan@gmail.com",
+      mobile: "9876543210",
+      role_bgcolor: "purple",
+    },
+    {
       name: "Harshil Rathod",
       role: "Client Relations",
-      bio: "Harshil ensure top-notch client satisfaction.",
+      bio: "Harshil ensures top-notch client satisfaction.",
       contact: "harshil@gmail.com",
       mobile: "8967485934",
       role_bgcolor: "red",
