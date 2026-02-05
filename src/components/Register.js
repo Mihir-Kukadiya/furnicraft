@@ -374,16 +374,16 @@ const Register = () => {
             sx={{
               backgroundColor: "primary.main",
               color: "primary.contrastText",
-              "&:hover": {
-                backgroundColor: "primary.dark",
-              },
               height: "50px",
               borderRadius: "10px",
               textTransform: "none",
               fontWeight: 500,
               fontSize: "15px",
               mt: 1,
-              "&:hover": { backgroundColor: "#000" },
+
+              "&:hover": {
+                backgroundColor: "#000",
+              },
             }}
             fullWidth
           >

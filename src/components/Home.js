@@ -13,11 +13,11 @@ const Home = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      nextSlide();
+      setCurrent((prev) => (prev + 1) % images.length);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [current]);
+  }, [images.length]);
 
   const nextSlide = () => {
     setCurrent((prev) => (prev + 1) % images.length);

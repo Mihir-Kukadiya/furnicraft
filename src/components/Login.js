@@ -45,7 +45,7 @@ const Login = () => {
 
     const { error: validationError } = loginSchema.validate(
       { email, password },
-      { abortEarly: true }
+      { abortEarly: true },
     );
 
     if (validationError) {
@@ -55,7 +55,10 @@ const Login = () => {
     }
 
     axios
-      .post(`${process.env.REACT_APP_API_BASE_URL}/auth/login`, { email, password })
+      .post(`${process.env.REACT_APP_API_BASE_URL}/auth/login`, {
+        email,
+        password,
+      })
       .then((res) => {
         const { token, user } = res.data;
 
@@ -109,7 +112,7 @@ const Login = () => {
           email: forgotEmail,
           securityAnswer,
           newPassword,
-        }
+        },
       );
 
       setForgotMessage(res.data.message || "Password updated successfully");
@@ -124,7 +127,7 @@ const Login = () => {
       }, 2000);
     } catch (err) {
       setForgotMessage(
-        err.response?.data?.message || "Failed to reset password"
+        err.response?.data?.message || "Failed to reset password",
       );
       setSeverity("error");
     }
@@ -260,14 +263,12 @@ const Login = () => {
           sx={{
             backgroundColor: theme.palette.primary.main,
             color: theme.palette.primary.contrastText,
-            "&:hover": {
-              backgroundColor: theme.palette.primary.dark,
-            },
             height: "50px",
             borderRadius: "10px",
             textTransform: "none",
             fontWeight: 500,
             fontSize: "15px",
+
             "&:hover": {
               backgroundColor: "#000",
             },

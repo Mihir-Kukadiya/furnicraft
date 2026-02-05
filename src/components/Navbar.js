@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -16,10 +16,8 @@ import {
 import { useCart } from "./CartProvider";
 import axios from "axios";
 import { Snackbar, Alert } from "@mui/material";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useFavorites } from "./FavoritesProvider";
 import Tooltip from "@mui/material/Tooltip";
-import AccountCircle from "@mui/icons-material/AccountCircle";
 import { FaCartShopping } from "react-icons/fa6";
 import { useTheme } from "@mui/material/styles";
 import { FaHeart } from "react-icons/fa";
@@ -70,14 +68,7 @@ const Navbar = () => {
   // ======================== admin login ===========================
 
   const email = sessionStorage.getItem("email");
-  const role = sessionStorage.getItem("role"); // admin | user
-
-  const [loginError, setLoginError] = useState("");
-
-  // ======================= eye icon =============================
-
-  const [showPassword, setShowPassword] = useState(false);
-  const handlePasswordClick = () => setShowPassword((prev) => !prev);
+  const role = sessionStorage.getItem("role");
 
   // ===================== open menu in avatar ========================
 

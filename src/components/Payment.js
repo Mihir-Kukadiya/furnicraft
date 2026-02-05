@@ -49,12 +49,6 @@ const Payment = () => {
 
   // ======================== payment methods =======================
 
-  const [cardDetails, setCardDetails] = useState({
-    number: "",
-    expiry: "",
-    cvv: "",
-  });
-
   const [upiId, setUpiId] = useState("");
 
   const [netBanking, setNetBanking] = useState({
@@ -162,8 +156,6 @@ const Payment = () => {
     }
 
     try {
-      let paymentId = "COD";
-      let finalStatus = "Pending";
 
       // ================= RAZORPAY PAYMENT =================
 

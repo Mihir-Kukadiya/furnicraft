@@ -36,7 +36,6 @@ const ProductDetail = ({
   const userEmail = sessionStorage.getItem("email");
   const role = sessionStorage.getItem("role"); // "admin" | "user"
   const isAdmin = role === "admin";
-  const isLoggedInUser = role === "user";
 
   const handleAddToCart = () => {
     if (!userEmail) {
