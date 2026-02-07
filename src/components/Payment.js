@@ -11,11 +11,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  TextField,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
 } from "@mui/material";
 import Swal from "sweetalert2";
 import { useTheme } from "@mui/material/styles";
@@ -31,30 +26,6 @@ const Payment = () => {
   const { cartItems, clearCart } = useCart();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState("card");
-
-  // ======================== banks list =======================
-
-  const banks = [
-    "State Bank of India",
-    "HDFC Bank",
-    "ICICI Bank",
-    "Axis Bank",
-    "Punjab National Bank",
-    "Bank of Baroda",
-    "Kotak Mahindra Bank",
-    "Canara Bank",
-    "Union Bank of India",
-    "IndusInd Bank",
-  ];
-
-  // ======================== payment methods =======================
-
-  const [upiId, setUpiId] = useState("");
-
-  const [netBanking, setNetBanking] = useState({
-    bankName: "",
-    accountNumber: "",
-  });
 
   // ======================== address management =======================
 
