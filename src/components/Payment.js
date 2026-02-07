@@ -156,6 +156,12 @@ const Payment = () => {
     }
 
     try {
+      // ================= CASH ON DELIVERY =================
+
+      if (paymentMethod === "cod") {
+        await createOrderAfterPayment("COD", "Pending");
+        return;
+      }
 
       // ================= RAZORPAY PAYMENT =================
 
@@ -358,54 +364,24 @@ const Payment = () => {
             </RadioGroup>
 
             {paymentMethod === "upi" && (
-              <Box sx={{ mt: 2 }}>
-                <TextField
-                  fullWidth
-                  label="UPI ID"
-                  variant="standard"
-                  value={upiId}
-                  onChange={(e) => setUpiId(e.target.value)}
-                  sx={{
-                    input: { color: "text.primary" },
-                    "& .MuiInput-underline:before": {
-                      borderBottomColor: theme.palette.divider,
-                    },
-                  }}
-                />
+              <Box
+                sx={{ mt: 2, p: 2, border: "1px dashed gray", borderRadius: 2 }}
+              >
+                <Typography>
+                  UPI details will be entered securely in Razorpay payment
+                  window after clicking “Place Order”.
+                </Typography>
               </Box>
             )}
 
             {paymentMethod === "netbanking" && (
-              <Box sx={{ mt: 2 }}>
-                <FormControl fullWidth variant="standard" margin="dense">
-                  <InputLabel>Select Bank</InputLabel>
-                  <Select
-                    value={netBanking.bankName}
-                    onChange={(e) =>
-                      setNetBanking({ ...netBanking, bankName: e.target.value })
-                    }
-                  >
-                    {banks.map((bank, index) => (
-                      <MenuItem key={index} value={bank}>
-                        {bank}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <TextField
-                  fullWidth
-                  label="Account Number"
-                  variant="standard"
-                  margin="dense"
-                  value={netBanking.accountNumber}
-                  onChange={(e) =>
-                    setNetBanking({
-                      ...netBanking,
-                      accountNumber: e.target.value,
-                    })
-                  }
-                />
+              <Box
+                sx={{ mt: 2, p: 2, border: "1px dashed gray", borderRadius: 2 }}
+              >
+                <Typography>
+                  Banking details will be entered securely in Razorpay payment
+                  window after clicking “Place Order”.
+                </Typography>
               </Box>
             )}
 
