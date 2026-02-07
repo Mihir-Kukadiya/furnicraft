@@ -238,19 +238,6 @@ const Products = () => {
                 gap: 2,
               }}
             >
-              {/* <TextField
-                label="Image URL"
-                value={newProduct.img}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, img: e.target.value })
-                }
-                fullWidth
-                sx={{
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: 2,
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
-                }}
-              /> */}
               <Button variant="outlined" component="label">
                 Choose Image
                 <input
@@ -840,7 +827,21 @@ const Products = () => {
         </Box>
 
         <Box sx={{ width: "100%", p: 3 }}>
-          {rows.map((row, rowIndex) => (
+          {sortedProducts.length === 0 ? (
+    <Typography
+      sx={{
+        textAlign: "center",
+        mt: 5,
+        fontSize: "1.4rem",
+        color: "text.secondary",
+        fontWeight: "bold",
+      }}
+    >
+      No products found 😔  
+      Try changing filters or search keywords.
+    </Typography>
+  ) : (
+          rows.map((row, rowIndex) => (
             <Box
               key={rowIndex}
               sx={{ display: "flex", gap: 3, mb: 3, flexWrap: "wrap" }}
@@ -1054,7 +1055,8 @@ const Products = () => {
                 </Box>
               ))}
             </Box>
-          ))}
+          ))
+        )}
         </Box>
         <ProductDetail
           open={Boolean(selectedProduct)}

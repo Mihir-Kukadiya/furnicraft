@@ -273,22 +273,21 @@ const ExpensiveProducts = () => {
                 onClick={async () => {
                   try {
                     const formData = new FormData();
-formData.append("name", newProduct.name);
-formData.append("price", newProduct.price);
-formData.append("category", newProduct.category);
-formData.append("description", newProduct.description);
-formData.append("img", newProduct.img);   // FILE
+                    formData.append("name", newProduct.name);
+                    formData.append("price", newProduct.price);
+                    formData.append("category", newProduct.category);
+                    formData.append("description", newProduct.description);
+                    formData.append("img", newProduct.img); // FILE
 
-const res = await axiosInstance.post(
-  "/expensive-products",
-  formData,
-  {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  }
-);
-
+                    const res = await axiosInstance.post(
+                      "/expensive-products",
+                      formData,
+                      {
+                        headers: {
+                          "Content-Type": "multipart/form-data",
+                        },
+                      },
+                    );
 
                     setExpensiveProducts((prev) => [...prev, res.data]);
 
@@ -364,26 +363,24 @@ const res = await axiosInstance.post(
                 }}
               >
                 <Button variant="outlined" component="label">
-  Change Image
-  <input
-    type="file"
-    hidden
-    accept="image/*"
-    onChange={(e) =>
-      setEditProduct({ ...editProduct, img: e.target.files[0] })
-    }
-  />
-</Button>
+                  Change Image
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={(e) =>
+                      setEditProduct({ ...editProduct, img: e.target.files[0] })
+                    }
+                  />
+                </Button>
 
-{editProduct.img && (
-  <Typography variant="body2" sx={{ mt: 1 }}>
-    {editProduct.img instanceof File
-      ? `Selected: ${editProduct.img.name}`
-      : "Current image already uploaded"}
-  </Typography>
-)}
-
-
+                {editProduct.img && (
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    {editProduct.img instanceof File
+                      ? `Selected: ${editProduct.img.name}`
+                      : "Current image already uploaded"}
+                  </Typography>
+                )}
 
                 <TextField
                   label="Product Name"
@@ -490,25 +487,25 @@ const res = await axiosInstance.post(
                   onClick={async () => {
                     const formData = new FormData();
 
-formData.append("name", editProduct.name);
-formData.append("price", editProduct.price);
-formData.append("category", editProduct.category);
-formData.append("description", editProduct.description);
+                    formData.append("name", editProduct.name);
+                    formData.append("price", editProduct.price);
+                    formData.append("category", editProduct.category);
+                    formData.append("description", editProduct.description);
 
-// only if new file selected
-if (editProduct.img instanceof File) {
-  formData.append("img", editProduct.img);
-}
+                    // only if new file selected
+                    if (editProduct.img instanceof File) {
+                      formData.append("img", editProduct.img);
+                    }
 
-const res = await axiosInstance.put(
-  `/expensive-products/${editProduct._id}`,
-  formData,
-  {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  }
-);
+                    const res = await axiosInstance.put(
+                      `/expensive-products/${editProduct._id}`,
+                      formData,
+                      {
+                        headers: {
+                          "Content-Type": "multipart/form-data",
+                        },
+                      },
+                    );
 
                     setExpensiveProducts((prev) =>
                       prev.map((p) =>
@@ -622,242 +619,272 @@ const res = await axiosInstance.put(
         </Box>
 
         <Box sx={{ width: "100%" }}>
-          {(() => {
-            const cardsPerRow = 3;
-            const rows = [];
-            for (
-              let i = 0;
-              i < sortedExpensiveProducts.length;
-              i += cardsPerRow
-            ) {
-              rows.push(sortedExpensiveProducts.slice(i, i + cardsPerRow));
-            }
-
-            return rows.map((row, rowIndex) => (
-              <Box
-                key={rowIndex}
+          {sortedExpensiveProducts.length === 0 ? (
+            <Box sx={{ textAlign: "center", mt: 5 }}>
+              <Typography
                 sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 3,
-                  justifyContent: "center",
-                  mb: 3,
+                  fontSize: "1.4rem",
+                  color: "text.secondary",
+                  fontWeight: "bold",
                 }}
               >
-                {row.map((product, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      flex: "1 1 300px",
-                      maxWidth: "100%",
-                      minWidth: "280px",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => handleOpenProduct(product)}
-                  >
-                    <Card
-                      sx={{
-                        borderRadius: 3,
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                        boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.16)",
-                        border: "1px solid #ccc",
-                      }}
-                    >
-                      <CardMedia
-                        component="img"
-                        image={product.img}
-                        alt={product.name}
-                        sx={{
-                          objectFit: "cover",
-                          borderTopLeftRadius: 12,
-                          borderTopRightRadius: 12,
-                          height: { xs: 220, sm: 280, md: 320, lg: 350 },
-                          width: "100%",
-                          transition: "0.3s ease",
-                        }}
-                      />
+                No elite products available 😔
+              </Typography>
 
-                      <CardContent
+              <Typography sx={{ mt: 1, mb: 2 }}>
+                Try changing filters or search keywords.
+              </Typography>
+
+              {isAdmin && (
+                <Button
+                  variant="contained"
+                  onClick={() => setIsAddDialogOpen(true)}
+                >
+                  + Add First Elite Product
+                </Button>
+              )}
+            </Box>
+          ) : (
+            (() => {
+              const cardsPerRow = 3;
+              const rows = [];
+              for (
+                let i = 0;
+                i < sortedExpensiveProducts.length;
+                i += cardsPerRow
+              ) {
+                rows.push(sortedExpensiveProducts.slice(i, i + cardsPerRow));
+              }
+
+              return rows.map((row, rowIndex) => (
+                <Box
+                  key={rowIndex}
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 3,
+                    justifyContent: "center",
+                    mb: 3,
+                  }}
+                >
+                  {row.map((product, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        flex: "1 1 300px",
+                        maxWidth: "100%",
+                        minWidth: "280px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => handleOpenProduct(product)}
+                    >
+                      <Card
                         sx={{
+                          borderRadius: 3,
+                          height: "100%",
                           display: "flex",
                           flexDirection: "column",
-                          height: "100%",
+                          justifyContent: "space-between",
+                          boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.16)",
+                          border: "1px solid #ccc",
                         }}
                       >
-                        <Box>
-                          <Typography variant="h6" fontWeight="bold">
-                            {product.name}
-                          </Typography>
-                          <Typography color="text.secondary" mb={1}>
-                            ₹{Number(product.price).toLocaleString("en-IN")}
-                          </Typography>
-                        </Box>
-                        <Box
+                        <CardMedia
+                          component="img"
+                          image={product.img}
+                          alt={product.name}
                           sx={{
-                            mt: "auto",
+                            objectFit: "cover",
+                            borderTopLeftRadius: 12,
+                            borderTopRightRadius: 12,
+                            height: { xs: 220, sm: 280, md: 320, lg: 350 },
+                            width: "100%",
+                            transition: "0.3s ease",
+                          }}
+                        />
+
+                        <CardContent
+                          sx={{
                             display: "flex",
-                            justifyContent: "space-between",
+                            flexDirection: "column",
+                            height: "100%",
                           }}
                         >
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const userEmail = sessionStorage.getItem("email");
-
-                              if (!userEmail) {
-                                setSnackbarMessage(
-                                  "Please log in to add items to your cart",
-                                );
-                                setSnackbarSeverity("warning");
-                                setOpenSnackbar(true);
-                                return;
-                              }
-
-                              if (isAdmin) {
-                                setSnackbarMessage(
-                                  "Admin cannot add items to cart",
-                                );
-                                setSnackbarSeverity("warning");
-                                setOpenSnackbar(true);
-                                return;
-                              }
-
-                              addToCart(product);
+                          <Box>
+                            <Typography variant="h6" fontWeight="bold">
+                              {product.name}
+                            </Typography>
+                            <Typography color="text.secondary" mb={1}>
+                              ₹{Number(product.price).toLocaleString("en-IN")}
+                            </Typography>
+                          </Box>
+                          <Box
+                            sx={{
+                              mt: "auto",
+                              display: "flex",
+                              justifyContent: "space-between",
                             }}
                           >
-                            Add to Cart
-                          </Button>
-                          <Box>
-                            {isAdmin && (
-                              <>
-                                <Tooltip title="Remove">
-                                  <IconButton
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      axiosInstance
-                                        .delete(
-                                          `/expensive-products/${product._id}`,
-                                        )
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const userEmail =
+                                  sessionStorage.getItem("email");
 
-                                        .then(() => {
-                                          setExpensiveProducts((prev) =>
-                                            prev.filter(
-                                              (p) => p._id !== product._id,
-                                            ),
-                                          );
-                                          setSnackbarMessage(
-                                            "Product deleted successfully",
-                                          );
-                                          setSnackbarSeverity("success");
-                                          setOpenSnackbar(true);
-                                        })
-                                        .catch(() => {
-                                          setSnackbarMessage(
-                                            "Failed to delete product",
-                                          );
-                                          setSnackbarSeverity("error");
-                                          setOpenSnackbar(true);
-                                        });
-                                    }}
-                                    sx={{
-                                      marginRight: { xs: "0", md: "10px" },
-                                      color: "#f44336",
-                                      fontSize: "20px",
-                                    }}
-                                  >
-                                    <FaRegTrashAlt />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Edit">
-                                  <IconButton
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setEditProduct(product);
-                                      setIsEditDialogOpen(true);
-                                    }}
-                                    sx={{
-                                      marginRight: { xs: "0", md: "10px" },
-                                      color:
-                                        theme.palette.mode === "dark"
-                                          ? "#fff"
-                                          : "#000",
-                                      fontSize: "23px",
-                                    }}
-                                  >
-                                    <MdEdit />
-                                  </IconButton>
-                                </Tooltip>
-                              </>
-                            )}
-                            <Tooltip
-                              title={
-                                isFavorited(product)
-                                  ? "Remove from favorites"
-                                  : "Add to favorites"
-                              }
-                            >
-                              <IconButton
-                                color={
-                                  isFavorited(product) ? "error" : "default"
+                                if (!userEmail) {
+                                  setSnackbarMessage(
+                                    "Please log in to add items to your cart",
+                                  );
+                                  setSnackbarSeverity("warning");
+                                  setOpenSnackbar(true);
+                                  return;
                                 }
-                                sx={{
-                                  color: isFavorited(product)
-                                    ? theme.palette.error.main
-                                    : theme.palette.mode === "dark"
-                                      ? "#fff"
-                                      : "#000",
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const userEmail =
-                                    sessionStorage.getItem("email");
 
-                                  if (!userEmail) {
-                                    setSnackbarMessage(
-                                      "Please log in to add items to favorites",
-                                    );
-                                    setSnackbarSeverity("warning");
-                                    setOpenSnackbar(true);
-                                    return;
-                                  }
+                                if (isAdmin) {
+                                  setSnackbarMessage(
+                                    "Admin cannot add items to cart",
+                                  );
+                                  setSnackbarSeverity("warning");
+                                  setOpenSnackbar(true);
+                                  return;
+                                }
 
-                                  if (isAdmin) {
-                                    setSnackbarMessage(
-                                      "Admin cannot add items in favorites",
-                                    );
-                                    setSnackbarSeverity("warning");
-                                    setOpenSnackbar(true);
-                                    return;
-                                  }
+                                addToCart(product);
+                              }}
+                            >
+                              Add to Cart
+                            </Button>
+                            <Box>
+                              {isAdmin && (
+                                <>
+                                  <Tooltip title="Remove">
+                                    <IconButton
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        axiosInstance
+                                          .delete(
+                                            `/expensive-products/${product._id}`,
+                                          )
 
-                                  if (isFavorited(product)) {
-                                    removeFavorite({ productId: product._id });
-                                  } else {
-                                    addFavorite(product);
-                                  }
-                                }}
+                                          .then(() => {
+                                            setExpensiveProducts((prev) =>
+                                              prev.filter(
+                                                (p) => p._id !== product._id,
+                                              ),
+                                            );
+                                            setSnackbarMessage(
+                                              "Product deleted successfully",
+                                            );
+                                            setSnackbarSeverity("success");
+                                            setOpenSnackbar(true);
+                                          })
+                                          .catch(() => {
+                                            setSnackbarMessage(
+                                              "Failed to delete product",
+                                            );
+                                            setSnackbarSeverity("error");
+                                            setOpenSnackbar(true);
+                                          });
+                                      }}
+                                      sx={{
+                                        marginRight: { xs: "0", md: "10px" },
+                                        color: "#f44336",
+                                        fontSize: "20px",
+                                      }}
+                                    >
+                                      <FaRegTrashAlt />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Edit">
+                                    <IconButton
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditProduct(product);
+                                        setIsEditDialogOpen(true);
+                                      }}
+                                      sx={{
+                                        marginRight: { xs: "0", md: "10px" },
+                                        color:
+                                          theme.palette.mode === "dark"
+                                            ? "#fff"
+                                            : "#000",
+                                        fontSize: "23px",
+                                      }}
+                                    >
+                                      <MdEdit />
+                                    </IconButton>
+                                  </Tooltip>
+                                </>
+                              )}
+                              <Tooltip
+                                title={
+                                  isFavorited(product)
+                                    ? "Remove from favorites"
+                                    : "Add to favorites"
+                                }
                               >
-                                {isFavorited(product) ? (
-                                  <Favorite />
-                                ) : (
-                                  <FavoriteBorder />
-                                )}
-                              </IconButton>
-                            </Tooltip>
+                                <IconButton
+                                  color={
+                                    isFavorited(product) ? "error" : "default"
+                                  }
+                                  sx={{
+                                    color: isFavorited(product)
+                                      ? theme.palette.error.main
+                                      : theme.palette.mode === "dark"
+                                        ? "#fff"
+                                        : "#000",
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const userEmail =
+                                      sessionStorage.getItem("email");
+
+                                    if (!userEmail) {
+                                      setSnackbarMessage(
+                                        "Please log in to add items to favorites",
+                                      );
+                                      setSnackbarSeverity("warning");
+                                      setOpenSnackbar(true);
+                                      return;
+                                    }
+
+                                    if (isAdmin) {
+                                      setSnackbarMessage(
+                                        "Admin cannot add items in favorites",
+                                      );
+                                      setSnackbarSeverity("warning");
+                                      setOpenSnackbar(true);
+                                      return;
+                                    }
+
+                                    if (isFavorited(product)) {
+                                      removeFavorite({
+                                        productId: product._id,
+                                      });
+                                    } else {
+                                      addFavorite(product);
+                                    }
+                                  }}
+                                >
+                                  {isFavorited(product) ? (
+                                    <Favorite />
+                                  ) : (
+                                    <FavoriteBorder />
+                                  )}
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
                           </Box>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Box>
-                ))}
-              </Box>
-            ));
-          })()}
+                        </CardContent>
+                      </Card>
+                    </Box>
+                  ))}
+                </Box>
+              ));
+            })()
+          )}
         </Box>
 
         <ProductDetail
