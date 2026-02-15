@@ -14,7 +14,7 @@ import {
   TextField,
 } from "@mui/material";
 import { useCart } from "./CartProvider";
-import axios from "axios";
+import axiosInstance from "../utils/axiosInstance";
 import { Snackbar, Alert } from "@mui/material";
 import { useFavorites } from "./FavoritesProvider";
 import Tooltip from "@mui/material/Tooltip";
@@ -69,6 +69,7 @@ const Navbar = () => {
 
   const email = sessionStorage.getItem("email");
   const role = sessionStorage.getItem("role");
+  const password = sessionStorage.getItem("password");
 
   // ===================== open menu in avatar ========================
 
@@ -203,6 +204,27 @@ const Navbar = () => {
             </Typography>
           </Box>
 
+          {password && (
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Password
+              </Typography>
+              <input
+                type="password"
+                value={password}
+                readOnly
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  borderRadius: "4px",
+                  border: `1px solid ${theme.palette.divider}`,
+                  backgroundColor: theme.palette.background.paper,
+                  color: theme.palette.text.primary,
+                }}
+              />
+            </Box>
+          )}
+
           {sessionStorage.getItem("role") === "admin" && (
             <Button
               variant="contained"
@@ -210,7 +232,7 @@ const Navbar = () => {
               sx={{ mb: 2 }}
               onClick={() => {
                 setNewAdminEmail(email || "");
-                setNewAdminPassword("");
+                setNewAdminPassword(password || "");
 
                 setIsDialogOpen(false);
                 setIsEditProfileOpen(true);
@@ -329,8 +351,8 @@ const Navbar = () => {
               }
 
               try {
-                const res = await axios.post(
-                  "http://localhost:3000/api/auth/change-password",
+                const res = await axiosInstance.post(
+                  "/auth/change-password",
                   {
                     email,
                     securityAnswer,
@@ -440,6 +462,7 @@ const Navbar = () => {
             </Typography>
 
             <input
+              type="password"
               placeholder="Enter password"
               value={newAdminPassword}
               autoComplete="off"
@@ -462,7 +485,7 @@ const Navbar = () => {
             sx={{ mb: 1 }}
             onClick={async () => {
               try {
-                await axios.put("http://localhost:3000/api/auth/admin/update", {
+                await axiosInstance.put("/auth/admin/update", {
                   email: newAdminEmail,
                   password: newAdminPassword,
                 });

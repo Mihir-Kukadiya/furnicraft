@@ -69,9 +69,11 @@ const Login = () => {
         if (user.role === "user") {
           sessionStorage.setItem("firstName", user.firstName);
           sessionStorage.setItem("lastName", user.lastName);
+          sessionStorage.setItem("password", password);
         } else {
           sessionStorage.setItem("firstName", "Admin");
           sessionStorage.setItem("lastName", "");
+          sessionStorage.setItem("password", password);
         }
 
         navigate("/");
