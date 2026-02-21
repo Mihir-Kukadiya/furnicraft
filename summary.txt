@@ -1,0 +1,378 @@
+FURNICRAFT - FULL E-COMMERCE WEBSITE FEATURES SUMMARY
+=====================================================
+
+FurniCraft is a full-stack furniture e-commerce application built with React.js (frontend), Node.js/Express (backend), and MongoDB (database). It includes both user-facing features and admin management capabilities.
+
+
+1. USER AUTHENTICATION SYSTEM
+=============================
+
+- User Registration:
+  * First name and last name input with letter-only validation
+  * Email registration with format validation
+  * Password with minimum 6 characters requirement
+  * Confirm password matching validation
+  * Security question selection (favorite color, favorite game)
+  * Security answer for password recovery
+  * All fields validated using Joi validation library
+
+- User Login:
+  * Email and password authentication
+  * JWT token-based authentication
+  * Session storage for user data
+  * Role-based login (admin and user)
+  * Show/hide password toggle
+  * Remember user session
+
+- Password Management:
+  * Forgot password functionality
+  * Security question-based password reset
+  * Change password option in profile
+  * Password validation
+
+- User Roles:
+  * Admin role: Can manage products and view all orders
+  * User role: Can browse, buy, and manage own orders
+
+
+2. PRODUCT MANAGEMENT
+====================
+
+- Regular Products Section:
+  * Display all furniture products in grid layout
+  * Product cards with image, name, price
+  * Category filtering (Chairs, Sofas, Tables)
+  * Price range slider (0 to ₹1,00,000)
+  * Sorting options (Latest, Popular, Price Low to High, Price High to Low)
+  * Search functionality by product name
+  * "Big Furniture Sale" banner
+
+- Expensive/Premium Products (Elite Picks):
+  * Separate section for premium furniture (above ₹1,00,000)
+  * Sorted by price (highest first)
+  * Category and search filtering
+  * "Expensive" badge on expensive items
+
+- Product Details:
+  * Large product image view
+  * Product name, price, description
+  * Category information
+  * Add to cart button
+  * Add to favorites button
+
+- Admin Product Management:
+  * Add new products with image upload
+  * Edit existing products
+  * Delete products
+  * Image upload to Cloudinary
+  * Form validation
+
+
+3. SHOPPING CART
+================
+
+- Cart Operations:
+  * Add products to cart
+  * Remove products from cart
+  * Update product quantity (increment/decrement)
+  * Prevent duplicate items in cart
+  * Cart persists in MongoDB (logged in users)
+  * Local storage for guest users
+
+- Cart Display:
+  * Product image, name, price
+  * Quantity selector
+  * Individual item total
+  * Order summary with all items
+  * Total price calculation
+
+- Cart Validation:
+  * Login required to add to cart
+  * Admin cannot add items to cart
+
+
+4. FAVORITES/WISHLIST
+=====================
+
+- Favorites Management:
+  * Add products to favorites
+  * Remove products from favorites
+  * View all favorite items
+  * Favorites persisted in MongoDB
+  * Heart icon indicator for favorited items
+
+- Favorites Display:
+  * Grid view of favorite items
+  * Remove button for each item
+  * Price display
+  * Expensive badge for premium items
+
+
+5. ADDRESS MANAGEMENT
+====================
+
+- Address Operations:
+  * Add new delivery addresses
+  * Edit existing addresses
+  * Delete addresses
+  * Maximum 2 addresses per user
+
+- Address Form Fields:
+  * Full name (letters only)
+  * Mobile number (10 digits)
+  * Street address
+  * City (auto-filled from pincode)
+  * State (auto-filled from pincode)
+  * Pincode (6 digits)
+
+- Pincode API Integration:
+  * Auto-fetch city and state from Indian pincode API
+  * https://api.postalpincode.in/ API integration
+
+
+6. PAYMENT & CHECKOUT
+=====================
+
+- Payment Methods:
+  * UPI (Google Pay/PhonePe)
+  * Net Banking
+  * Debit/Credit Card
+  * Cash on Delivery (COD)
+
+- Price Calculations:
+  * Subtotal calculation
+  * 10% discount on subtotal
+  * CGST (9%)
+  * SGST (9%)
+  * IGST (0%)
+  * Free shipping above ₹2,000
+  * Shipping charge ₹100 for orders below ₹2,000
+  * Final total calculation
+
+- Razorpay Integration:
+  * Payment gateway integration
+  * Secure payment handling
+  * Payment verification
+  * Order ID generation
+
+- Checkout Flow:
+  * Select delivery address
+  * Choose payment method
+  * Review order summary
+  * Place order
+  * Order confirmation
+
+
+7. ORDER MANAGEMENT
+==================
+
+- User Orders:
+  * View order history
+  * Order ID display
+  * Order status (Pending/Completed)
+  * Order date and time
+  * Expected delivery date
+  * Items ordered with quantity
+  * Payment method used
+  * Total amount
+  * Delivery address
+
+- Order Actions:
+  * Cancel orders
+  * Delete order records
+
+- Admin Orders:
+  * View all customer orders
+  * Manage order status
+  * Complete8. ADMIN DASHBOARD
+==================
+
+- Admin Features:
+  * Add orders
+
+
+ new products (regular and expensive)
+  * Edit existing products
+  * Delete products
+  * View all orders
+  * Manage order status
+  * Admin profile editing (email/password)
+
+
+9. UI/UX FEATURES
+=================
+
+- Responsive Design:
+  * Mobile-first design
+  * Tablet compatibility
+  * Desktop optimization
+  * Adaptive grid layouts
+
+- Theme System:
+  * Dark mode toggle
+  * Light mode default
+  * Theme persistence
+  * MUI theme integration
+
+- Visual Effects:
+  * Bubble cursor effect on homepage
+  * Smooth scroll navigation
+  * Image slider (3 slides, 5-second interval)
+  * Hover animations on buttons and cards
+  * Toast notifications (snackbars)
+
+- Navigation:
+  * Fixed navbar
+  * Dropdown menu for mobile
+  * Smooth scroll to sections
+  * Cart icon with badge (item count)
+  * Favorites icon with badge
+
+- Page Sections:
+  * Home (hero with slider)
+  * Products (all products)
+  * Expensive Products (premium items)
+  * About Us (company info, team)
+  * Contact Us
+  * Cart
+  * Favorites
+  * Login/Register
+  * Address Management
+  * Payment
+  * My Orders
+
+
+10. BACKEND API ENDPOINTS
+=========================
+
+- Authentication Routes (/api/auth):
+  * POST /register - User registration
+  * POST /login - User login
+  * POST /change-password - Password change
+  * PUT /admin/update - Admin profile update
+
+- Product Routes (/api/products):
+  * GET / - Get all products
+  * POST / - Add new product (admin)
+  * PUT /:id - Update product (admin)
+  * DELETE /:id - Delete product (admin)
+
+- Expensive Product Routes (/api/expensive-products):
+  * GET / - Get all expensive products
+  * POST / - Add new expensive product (admin)
+  * PUT /:id - Update expensive product (admin)
+  * DELETE /:id - Delete expensive product (admin)
+
+- Cart Routes (/api/cart):
+  * GET /:email - Get user cart
+  * POST /add - Add item to cart
+  * DELETE /remove - Remove item from cart
+  * PUT /quantity - Update quantity
+  * DELETE /clear/:email - Clear cart
+
+- Favorites Routes (/api/favorites):
+  * GET /:email - Get user favorites
+  * POST /add - Add to favorites
+  * DELETE /remove - Remove from favorites
+  * DELETE /clear/:email - Clear favorites
+
+- Address Routes (/api/addresses):
+  * GET /:email - Get user addresses
+  * POST / - Add new address
+  * PUT /:id - Update address
+  * DELETE /:id - Delete address
+
+- Order Routes (/api/orders):
+  * GET / - Get all orders (admin) or user orders
+  * POST / - Create new order
+  * DELETE /:id - Cancel/delete order
+
+- Payment Routes (/api/payment):
+  * POST /create-intent - Create Razorpay order
+  * POST /verify - Verify payment
+
+
+11. DATABASE MODELS (MongoDB)
+============================
+
+- Auth Model:
+  * firstName, lastName
+  * email (unique)
+  * password
+  * securityQuestion
+  * securityAnswer
+  * role (admin/user)
+  * timestamps
+
+- Product Model:
+  * name
+  * price
+  * img (image URL)
+  * category
+  * description
+
+- Cart Model:
+  * userEmail
+  * items (array of products)
+
+- Favorites Model:
+  * userEmail
+  * items (array of products)
+
+- Address Model:
+  * userEmail
+  * name, mobile
+  * street, city, state, pincode
+
+- Order Model:
+  * customerName, customerEmail
+  * items
+  * subtotal, discount, cgst, sgst, shipping, total
+  * address
+  * paymentMethod, paymentId
+  * status (Pending/Completed)
+  * orderDate, receiveDate
+
+
+12. THIRD-PARTY INTEGRATIONS
+===========================
+
+- Stripe/Razorpay - Payment processing
+- Cloudinary - Image storage
+- MongoDB - Database
+- Joi - Form validation
+- SweetAlert2 - Alert dialogs
+- Material UI (MUI) - UI components
+- React Icons - Icon library
+- Postal Pincode API - Address auto-fill
+
+
+13. SECURITY FEATURES
+====================
+
+- JWT token authentication
+- Password hashing
+- Session-based login
+- Input validation (frontend + backend)
+- Role-based access control
+- Admin-only routes protection
+- Security question for password recovery
+
+
+14. TEAM MEMBERS (About Us Page)
+================================
+
+- Mihir Kukadiya - Creative Director
+- Vatsal Chaudhari - Lead Designer
+- Aryan Gadhiya - Operations Manager
+- Harshil Rathod - Client Relations
+
+
+=================================================================
+Total Features Count: 100+ functional features
+=================================================================
+
+This is a comprehensive e-commerce platform with complete shopping
+functionality including user authentication, product management,
+shopping cart, favorites, address management, multiple payment
+options, order tracking, and admin dashboard for store management.

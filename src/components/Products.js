@@ -5,6 +5,7 @@ import { useTheme } from "@mui/material/styles";
 import { MdEdit } from "react-icons/md";
 import { useFilters } from "./FiltersContext";
 import { Tooltip } from "@mui/material";
+import { Rating } from "@mui/material";
 import {
   Box,
   Grid,
@@ -49,16 +50,53 @@ const Products = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleOpenProduct = (product) => setSelectedProduct(product);
-  const handleCloseProduct = () => setSelectedProduct(null);
+
+  const handleCloseProduct = async () => {
+    if (selectedProduct?._id) {
+      await fetchProductRating(selectedProduct._id, "regular");
+    }
+    setSelectedProduct(null);
+  };
 
   // ================= Load products from MongoDB ==================
+
+  const [productsData, setProductsData] = useState([]);
+  const [productRatings, setProductRatings] = useState({});
 
   useEffect(() => {
     axiosInstance
       .get("/products")
-      .then((res) => setProductsData(res.data))
+      .then((res) => {
+        setProductsData(res.data);
+        // Fetch ratings for all products
+        res.data.forEach((product) => {
+          fetchProductRating(product._id, "regular");
+        });
+      })
       .catch((err) => console.error(err));
   }, []);
+
+  const fetchProductRating = async (productId, productType) => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const response = await axiosInstance.get(
+        `/ratings/${productId}/${productType}`,
+        config
+      );
+      if (response.data) {
+        setProductRatings((prev) => ({
+          ...prev,
+          [productId]: {
+            averageRating: response.data.averageRating || 0,
+            totalRatings: response.data.totalRatings || 0,
+          },
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching rating:", error);
+    }
+  };
 
   // ====================== edit product popup =========================
 
@@ -80,8 +118,6 @@ const Products = () => {
   const isAdmin = role === "admin";
 
   // ========================= add product popup =========================
-
-  const [productsData, setProductsData] = useState([]);
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
@@ -599,7 +635,7 @@ const Products = () => {
                       console.error(err);
                       setSnackbarMessage(
                         err.response?.data?.message ||
-                          "Failed to update product",
+                        "Failed to update product",
                       );
                       setSnackbarSeverity("error");
                       setOpenSnackbar(true);
@@ -828,235 +864,249 @@ const Products = () => {
 
         <Box sx={{ width: "100%", p: 3 }}>
           {sortedProducts.length === 0 ? (
-    <Typography
-      sx={{
-        textAlign: "center",
-        mt: 5,
-        fontSize: "1.4rem",
-        color: "text.secondary",
-        fontWeight: "bold",
-      }}
-    >
-      No products found 😔  
-      Try changing filters or search keywords.
-    </Typography>
-  ) : (
-          rows.map((row, rowIndex) => (
-            <Box
-              key={rowIndex}
-              sx={{ display: "flex", gap: 3, mb: 3, flexWrap: "wrap" }}
+            <Typography
+              sx={{
+                textAlign: "center",
+                mt: 5,
+                fontSize: "1.4rem",
+                color: "text.secondary",
+                fontWeight: "bold",
+              }}
             >
-              {row.map((product, colIndex) => (
-                <Box
-                  key={colIndex}
-                  onClick={() => handleOpenProduct(product)}
-                  sx={{
-                    cursor: "pointer",
-                    flex: "1 1 300px",
-                    maxWidth: "100%",
-                    minWidth: "280px",
-                  }}
-                >
-                  <Card
+              No products found 😔
+              Try changing filters or search keywords.
+            </Typography>
+          ) : (
+            rows.map((row, rowIndex) => (
+              <Box
+                key={rowIndex}
+                sx={{ display: "flex", gap: 3, mb: 3, flexWrap: "wrap" }}
+              >
+                {row.map((product, colIndex) => (
+                  <Box
+                    key={colIndex}
+                    onClick={() => handleOpenProduct(product)}
                     sx={{
-                      borderRadius: 3,
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      boxShadow: theme.shadows[3],
-                      bgcolor: "background.paper",
-                      color: "text.primary",
-                      border: "1px solid #ccc",
+                      cursor: "pointer",
+                      flex: "1 1 300px",
+                      maxWidth: "100%",
+                      minWidth: "280px",
                     }}
                   >
-                    <CardMedia
-                      component="img"
-                      image={product.img}
-                      alt={product.name}
+                    <Card
                       sx={{
-                        objectFit: "cover",
-                        borderTopLeftRadius: 12,
-                        borderTopRightRadius: 12,
-                        height: { xs: 220, sm: 280, md: 320, lg: 350 },
-                        width: "100%",
-                        transition: "0.3s ease",
-                      }}
-                    />
-
-                    <CardContent
-                      sx={{
+                        borderRadius: 3,
+                        height: "100%",
                         display: "flex",
                         flexDirection: "column",
-                        height: "100%",
+                        justifyContent: "space-between",
+                        boxShadow: theme.shadows[3],
+                        bgcolor: "background.paper",
+                        color: "text.primary",
+                        border: "1px solid #ccc",
                       }}
                     >
-                      <Typography variant="h6" fontWeight="bold">
-                        {product.name}
-                      </Typography>
-                      <Typography color="text.secondary" mb={1}>
-                        ₹{Number(product.price).toLocaleString("en-IN")}
-                      </Typography>
-
-                      <Box
+                      <CardMedia
+                        component="img"
+                        image={product.img}
+                        alt={product.name}
                         sx={{
-                          mt: "auto",
+                          objectFit: "cover",
+                          borderTopLeftRadius: 12,
+                          borderTopRightRadius: 12,
+                          height: { xs: 220, sm: 280, md: 320, lg: 350 },
+                          width: "100%",
+                          transition: "0.3s ease",
+                        }}
+                      />
+
+                      <CardContent
+                        sx={{
                           display: "flex",
-                          justifyContent: "space-between",
+                          flexDirection: "column",
+                          height: "100%",
                         }}
                       >
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const userEmail = sessionStorage.getItem("email");
+                        <Typography variant="h6" fontWeight="bold">
+                          {product.name}
+                        </Typography>
 
-                            if (!userEmail) {
-                              setSnackbarMessage(
-                                "Please log in to add items to cart",
-                              );
-                              setSnackbarSeverity("warning");
-                              setOpenSnackbar(true);
-                              return;
-                            }
+                        {/* Average Rating Display */}
+                        {productRatings[product._id] && productRatings[product._id].averageRating > 0 && (
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                            <Rating
+                              value={productRatings[product._id].averageRating}
+                              readOnly
+                              precision={0.5}
+                              size="small"
+                            />
+                          </Box>
+                        )}
 
-                            if (isAdmin) {
-                              setSnackbarMessage(
-                                "Admin cannot add products to cart",
-                              );
-                              setSnackbarSeverity("warning");
-                              setOpenSnackbar(true);
-                              return;
-                            }
+                        <Typography color="text.secondary" mb={1}>
+                          ₹{Number(product.price).toLocaleString("en-IN")}
+                        </Typography>
 
-                            addToCart(product);
+                        <Box
+                          sx={{
+                            mt: "auto",
+                            display: "flex",
+                            justifyContent: "space-between",
                           }}
                         >
-                          Add to Cart
-                        </Button>
-                        <Box>
-                          {isAdmin && (
-                            <>
-                              <Tooltip title="Remove">
-                                <IconButton
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    axiosInstance
-                                      .delete(`/products/${product._id}`)
-                                      .then(() => {
-                                        setProductsData((prev) =>
-                                          prev.filter(
-                                            (p) => p._id !== product._id,
-                                          ),
-                                        );
-                                        setSnackbarMessage(
-                                          "Product deleted successfully",
-                                        );
-                                        setSnackbarSeverity("success");
-                                        setOpenSnackbar(true);
-                                      })
-                                      .catch((err) => {
-                                        console.error(err);
-                                        setSnackbarMessage(
-                                          err.response?.data?.message ||
-                                            "Failed to delete product",
-                                        );
-                                        setSnackbarSeverity("error");
-                                        setOpenSnackbar(true);
-                                      });
-                                  }}
-                                  sx={{
-                                    marginRight: { xs: "0", md: "10px" },
-                                    color: "#f44336",
-                                    fontSize: "20px",
-                                  }}
-                                >
-                                  <FaRegTrashAlt />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Edit">
-                                <IconButton
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    openEditDialog(product);
-                                  }}
-                                  sx={{
-                                    marginRight: { xs: "0", md: "10px" },
-                                    color:
-                                      theme.palette.mode === "dark"
-                                        ? "#fff"
-                                        : "#000",
-                                    fontSize: "23px",
-                                  }}
-                                >
-                                  <MdEdit />
-                                </IconButton>
-                              </Tooltip>
-                            </>
-                          )}
-                          <Tooltip
-                            title={
-                              isFavorite(product)
-                                ? "Remove from favorites"
-                                : "Add to favorites"
-                            }
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const userEmail = sessionStorage.getItem("email");
+
+                              if (!userEmail) {
+                                setSnackbarMessage(
+                                  "Please log in to add items to cart",
+                                );
+                                setSnackbarSeverity("warning");
+                                setOpenSnackbar(true);
+                                return;
+                              }
+
+                              if (isAdmin) {
+                                setSnackbarMessage(
+                                  "Admin cannot add products to cart",
+                                );
+                                setSnackbarSeverity("warning");
+                                setOpenSnackbar(true);
+                                return;
+                              }
+
+                              addToCart(product);
+                            }}
                           >
-                            <IconButton
-                              color={isFavorite(product) ? "error" : "default"}
-                              sx={{
-                                color: isFavorite(product)
-                                  ? theme.palette.error.main
-                                  : theme.palette.mode === "dark"
-                                    ? "#fff"
-                                    : "#000",
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const userEmail =
-                                  sessionStorage.getItem("email");
-
-                                if (!userEmail) {
-                                  setSnackbarMessage(
-                                    "Please log in to use favorites",
-                                  );
-                                  setSnackbarSeverity("warning");
-                                  setOpenSnackbar(true);
-                                  return;
-                                }
-
-                                if (isAdmin) {
-                                  setSnackbarMessage(
-                                    "Admin cannot add products to favorites",
-                                  );
-                                  setSnackbarSeverity("warning");
-                                  setOpenSnackbar(true);
-                                  return;
-                                }
-
-                                if (isFavorite(product)) {
-                                  removeFavorite({ productId: product._id });
-                                } else {
-                                  addFavorite(product);
-                                }
-                              }}
+                            Add to Cart
+                          </Button>
+                          
+                          <Box>
+                            {isAdmin && (
+                              <>
+                                <Tooltip title="Remove">
+                                  <IconButton
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      axiosInstance
+                                        .delete(`/products/${product._id}`)
+                                        .then(() => {
+                                          setProductsData((prev) =>
+                                            prev.filter(
+                                              (p) => p._id !== product._id,
+                                            ),
+                                          );
+                                          setSnackbarMessage(
+                                            "Product deleted successfully",
+                                          );
+                                          setSnackbarSeverity("success");
+                                          setOpenSnackbar(true);
+                                        })
+                                        .catch((err) => {
+                                          console.error(err);
+                                          setSnackbarMessage(
+                                            err.response?.data?.message ||
+                                            "Failed to delete product",
+                                          );
+                                          setSnackbarSeverity("error");
+                                          setOpenSnackbar(true);
+                                        });
+                                    }}
+                                    sx={{
+                                      marginRight: { xs: "0", md: "10px" },
+                                      color: "#f44336",
+                                      fontSize: "20px",
+                                    }}
+                                  >
+                                    <FaRegTrashAlt />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Edit">
+                                  <IconButton
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openEditDialog(product);
+                                    }}
+                                    sx={{
+                                      marginRight: { xs: "0", md: "10px" },
+                                      color:
+                                        theme.palette.mode === "dark"
+                                          ? "#fff"
+                                          : "#000",
+                                      fontSize: "23px",
+                                    }}
+                                  >
+                                    <MdEdit />
+                                  </IconButton>
+                                </Tooltip>
+                              </>
+                            )}
+                            <Tooltip
+                              title={
+                                isFavorite(product)
+                                  ? "Remove from favorites"
+                                  : "Add to favorites"
+                              }
                             >
-                              {isFavorite(product) ? (
-                                <Favorite />
-                              ) : (
-                                <FavoriteBorder />
-                              )}
-                            </IconButton>
-                          </Tooltip>
+                              <IconButton
+                                color={isFavorite(product) ? "error" : "default"}
+                                sx={{
+                                  color: isFavorite(product)
+                                    ? theme.palette.error.main
+                                    : theme.palette.mode === "dark"
+                                      ? "#fff"
+                                      : "#000",
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const userEmail =
+                                    sessionStorage.getItem("email");
+
+                                  if (!userEmail) {
+                                    setSnackbarMessage(
+                                      "Please log in to use favorites",
+                                    );
+                                    setSnackbarSeverity("warning");
+                                    setOpenSnackbar(true);
+                                    return;
+                                  }
+
+                                  if (isAdmin) {
+                                    setSnackbarMessage(
+                                      "Admin cannot add products to favorites",
+                                    );
+                                    setSnackbarSeverity("warning");
+                                    setOpenSnackbar(true);
+                                    return;
+                                  }
+
+                                  if (isFavorite(product)) {
+                                    removeFavorite({ productId: product._id });
+                                  } else {
+                                    addFavorite(product);
+                                  }
+                                }}
+                              >
+                                {isFavorite(product) ? (
+                                  <Favorite />
+                                ) : (
+                                  <FavoriteBorder />
+                                )}
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
                         </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Box>
-              ))}
-            </Box>
-          ))
-        )}
+                      </CardContent>
+                    </Card>
+                  </Box>
+                ))}
+              </Box>
+            ))
+          )}
         </Box>
         <ProductDetail
           open={Boolean(selectedProduct)}
@@ -1066,6 +1116,7 @@ const Products = () => {
           onAddFavorite={addFavorite}
           onRemoveFavorite={removeFavorite}
           isFavorite={isFavorite}
+          productType="regular"
         />
       </Box>
     </>

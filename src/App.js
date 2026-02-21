@@ -21,7 +21,7 @@ import Orders from "./components/Orders";
 import CompleteOrders from "./components/completeOrders";
 import MyOrders from "./components/MyOrders";
 
-import BubbleCursor from "./components/BubbleCursos";
+// import BubbleCursor from "./components/BubbleCursos";
 
 import CartProvider from "./components/CartProvider";
 import FavoritesProvider from "./components/FavoritesProvider";
@@ -39,7 +39,7 @@ const App = () => {
         <FavoritesProvider>
           <FiltersProvider>
             <BrowserRouter>
-              <BubbleCursor />
+              {/* <BubbleCursor /> */}
               <Navbar />
 
               <Routes>

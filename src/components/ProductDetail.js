@@ -15,6 +15,7 @@ import {
 import { Favorite, FavoriteBorder } from "@mui/icons-material";
 import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
+import Rating from "./Rating";
 
 const ProductDetail = ({
   open,
@@ -24,6 +25,7 @@ const ProductDetail = ({
   onAddFavorite,
   onRemoveFavorite,
   isFavorite,
+  productType = "regular",
 }) => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("info");
@@ -179,6 +181,9 @@ const ProductDetail = ({
               >
                 {product.description}
               </Typography>
+
+              {/* Rating Component */}
+              <Rating productId={product._id} productType={productType} />
             </Box>
           </Box>
         </DialogContent>

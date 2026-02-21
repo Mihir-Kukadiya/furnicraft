@@ -10,6 +10,7 @@ import favoriteRoutes from "./routes/favoritesRoutes.js";
 import addressRoutes from "./routes/addressRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import ratingRoutes from "./routes/ratingRoutes.js";
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use("/api/favorites", favoriteRoutes);
 app.use("/api/addresses", addressRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/ratings", ratingRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

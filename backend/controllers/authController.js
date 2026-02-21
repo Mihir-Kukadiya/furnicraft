@@ -41,6 +41,7 @@ export const login = async (req, res) => {
         role: account.role,
         firstName: account.firstName || null,
         lastName: account.lastName || null,
+        securityQuestion: account.securityQuestion || null,
       },
     });
   } catch (err) {

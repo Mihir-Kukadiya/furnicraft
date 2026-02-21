@@ -14,6 +14,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Rating,
 } from "@mui/material";
 import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
 import { MdEdit } from "react-icons/md";
@@ -36,6 +37,7 @@ const ExpensiveProducts = () => {
   // ============================== fetch products data ===============================
 
   const [expensiveProducts, setExpensiveProducts] = useState([]);
+  const [productRatings, setProductRatings] = useState({});
   const role = sessionStorage.getItem("role"); // "admin" | "user"
   const isAdmin = role === "admin";
 
@@ -49,6 +51,11 @@ const ExpensiveProducts = () => {
         );
 
         setExpensiveProducts(sortedByPrice);
+
+        // Fetch ratings for all products
+        res.data.forEach((product) => {
+          fetchProductRating(product._id, "expensive");
+        });
       } catch (err) {
         console.error("Failed to fetch expensive products", err);
       }
@@ -56,6 +63,28 @@ const ExpensiveProducts = () => {
 
     fetchExpensiveProducts();
   }, []);
+
+  const fetchProductRating = async (productId, productType) => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const response = await axiosInstance.get(
+        `/ratings/${productId}/${productType}`,
+        config
+      );
+      if (response.data) {
+        setProductRatings((prev) => ({
+          ...prev,
+          [productId]: {
+            averageRating: response.data.averageRating || 0,
+            totalRatings: response.data.totalRatings || 0,
+          },
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching rating:", error);
+    }
+  };
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -97,10 +126,17 @@ const ExpensiveProducts = () => {
   // ========================= product popup ============================
 
   const [open, setOpen] = useState(false);
+
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleOpenProduct = (product) => setSelectedProduct(product);
-  const handleCloseProduct = () => setSelectedProduct(null);
+
+  const handleCloseProduct = async () => {
+    if (selectedProduct?._id) {
+      await fetchProductRating(selectedProduct._id, "expensive");
+    }
+    setSelectedProduct(null);
+  };
 
   useEffect(() => {
     if (message) setOpen(true);
@@ -172,19 +208,6 @@ const ExpensiveProducts = () => {
                 gap: 2,
               }}
             >
-              {/* <TextField
-                label="Image URL"
-                value={newProduct.img}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, img: e.target.value })
-                }
-                fullWidth
-                sx={{
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: 2,
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
-                }}
-              /> */}
               <Button variant="outlined" component="label">
                 Choose Image
                 <input
@@ -277,7 +300,7 @@ const ExpensiveProducts = () => {
                     formData.append("price", newProduct.price);
                     formData.append("category", newProduct.category);
                     formData.append("description", newProduct.description);
-                    formData.append("img", newProduct.img); // FILE
+                    formData.append("img", newProduct.img);
 
                     const res = await axiosInstance.post(
                       "/expensive-products",
@@ -434,7 +457,6 @@ const ExpensiveProducts = () => {
                 >
                   <InputLabel
                     id="edit-category-label"
-                    category
                     sx={{ color: theme.palette.text.secondary }}
                   >
                     Category
@@ -492,7 +514,6 @@ const ExpensiveProducts = () => {
                     formData.append("category", editProduct.category);
                     formData.append("description", editProduct.description);
 
-                    // only if new file selected
                     if (editProduct.img instanceof File) {
                       formData.append("img", editProduct.img);
                     }
@@ -551,7 +572,7 @@ const ExpensiveProducts = () => {
         >
           <Alert
             onClose={() => setOpen(false)}
-            severity={message.includes("already") ? "warning" : "success"}
+            severity={message?.includes("already") ? "warning" : "success"}
             sx={{ width: "100%" }}
           >
             {message}
@@ -714,6 +735,19 @@ const ExpensiveProducts = () => {
                             <Typography variant="h6" fontWeight="bold">
                               {product.name}
                             </Typography>
+
+                            {/* Average Rating Display */}
+                            {productRatings[product._id] && productRatings[product._id].averageRating > 0 && (
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                                <Rating
+                                  value={productRatings[product._id].averageRating}
+                                  readOnly
+                                  precision={0.5}
+                                  size="small"
+                                />
+                              </Box>
+                            )}
+
                             <Typography color="text.secondary" mb={1}>
                               ₹{Number(product.price).toLocaleString("en-IN")}
                             </Typography>
@@ -895,6 +929,7 @@ const ExpensiveProducts = () => {
           onAddFavorite={addFavorite}
           onRemoveFavorite={removeFavorite}
           isFavorite={isFavorited}
+          productType="expensive"
         />
       </Box>
     </>

@@ -70,6 +70,10 @@ const Login = () => {
           sessionStorage.setItem("firstName", user.firstName);
           sessionStorage.setItem("lastName", user.lastName);
           sessionStorage.setItem("password", password);
+          // Save security question to localStorage for change password dialog
+          if (user.securityQuestion) {
+            localStorage.setItem(`securityQuestion_${user.email}`, user.securityQuestion);
+          }
         } else {
           sessionStorage.setItem("firstName", "Admin");
           sessionStorage.setItem("lastName", "");
