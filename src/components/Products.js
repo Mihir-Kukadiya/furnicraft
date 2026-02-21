@@ -711,6 +711,28 @@ const Products = () => {
             + Add Item
           </Button>
         )}
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            mb: 3,
+            px: 2,
+            mt: { xs: -3, sm: 2, md: 3 },
+          }}
+        >
+          <TextField
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+            sx={{
+              width: { xs: "100%", sm: "60%", md: "60%" },
+              backgroundColor: theme.palette.background.paper,
+              borderRadius: 3,
+              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+            }}
+          />
+        </Box>
         <Grid
           container
           spacing={3}
@@ -839,28 +861,6 @@ const Products = () => {
             </Box>
           </Grid>
         </Grid>
-
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            mb: 3,
-            px: 2,
-            mt: { xs: -3, sm: 2, md: 3 },
-          }}
-        >
-          <TextField
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            sx={{
-              width: { xs: "100%", sm: "60%", md: "60%" },
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: 3,
-              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-            }}
-          />
-        </Box>
 
         <Box sx={{ width: "100%", p: 3 }}>
           {sortedProducts.length === 0 ? (
