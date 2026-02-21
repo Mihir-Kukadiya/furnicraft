@@ -1,138 +1,97 @@
-import React, { useState, useEffect } from "react";
-import { Box, Rating as MuiRating, Typography, Snackbar, Alert } from "@mui/material";
+import React, { useCallback, useEffect, useState } from "react";
+import { Box, Typography, Rating as MuiRating } from "@mui/material";
 import axiosInstance from "../utils/axiosInstance";
 
-const Rating = ({ productId, productType = "regular" }) => {
-  const [rating, setRating] = useState(0);
+// Props:
+// - productId (string)
+// - productType ("regular" | "expensive" | etc)
+// - onRated (optional callback) -> call after user submits rating successfully
+const Rating = ({ productId, productType = "regular", onRated }) => {
+  const [myRating, setMyRating] = useState(0);
   const [averageRating, setAverageRating] = useState(0);
   const [totalRatings, setTotalRatings] = useState(0);
-  const [hover, setHover] = useState(-1);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [loading, setLoading] = useState(false);
 
-  const userEmail = sessionStorage.getItem("email");
-  const token = sessionStorage.getItem("token");
+  const fetchRating = useCallback(async () => {
+    if (!productId) return;
 
-  useEffect(() => {
-    if (productId) {
-      fetchRating();
-    }
-  }, [productId]);
-
-  const fetchRating = async () => {
     try {
-      const config = {};
-      if (token) {
-        config.headers = {
-          Authorization: `Bearer ${token}`,
-        };
-      }
-      const response = await axiosInstance.get(
+      const token = sessionStorage.getItem("token");
+      const config = token
+        ? { headers: { Authorization: `Bearer ${token}` } }
+        : {};
+
+      const res = await axiosInstance.get(
         `/ratings/${productId}/${productType}`,
         config
       );
-      if (response.data) {
-        setAverageRating(response.data.averageRating || 0);
-        setTotalRatings(response.data.totalRatings || 0);
-        if (response.data.userRating) {
-          setRating(response.data.userRating);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching rating:", error);
-    }
-  };
 
-  const handleRatingChange = async (event, newValue) => {
-    if (!userEmail) {
-      setSnackbar({
-        open: true,
-        message: "Please login to rate this product",
-        severity: "warning",
-      });
-      return;
-    }
+      setAverageRating(res.data?.averageRating || 0);
+      setTotalRatings(res.data?.totalRatings || 0);
 
-    if (!newValue) return;
+      // if your API returns user's rating too, set it here (optional)
+      // setMyRating(res.data?.userRating || 0);
+    } catch (err) {
+      console.error("Error fetching rating:", err);
+    }
+  }, [productId, productType]);
+
+  useEffect(() => {
+    fetchRating();
+  }, [fetchRating]);
+
+  const handleChange = async (_, value) => {
+    if (!value) return;
+
+    const userEmail = sessionStorage.getItem("email");
+    if (!userEmail) return; // you can show snackbar if you want
 
     try {
-      const response = await axiosInstance.post(
-        "/ratings",
+      setLoading(true);
+
+      const token = sessionStorage.getItem("token");
+      const config = token
+        ? { headers: { Authorization: `Bearer ${token}` } }
+        : {};
+
+      // ⚠️ Adjust endpoint/body according to your backend
+      await axiosInstance.post(
+        `/ratings`,
         {
           productId,
-          rating: newValue,
           productType,
+          rating: value,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        config
       );
 
-      if (response.data) {
-        setRating(newValue);
-        setAverageRating(response.data.averageRating);
-        setTotalRatings(response.data.totalRatings);
-        setSnackbar({
-          open: true,
-          message: "Thank you for rating!",
-          severity: "success",
-        });
-      }
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || "Failed to submit rating",
-        severity: "error",
-      });
-    }
-  };
+      setMyRating(value);
 
-  const getLabelText = (value) => {
-    return `${value} Star${value !== 1 ? "s" : ""}`;
+      // refresh avg immediately in dialog
+      await fetchRating();
+
+      // ✅ notify parent so product card can refresh too (instant update)
+      onRated?.(productId);
+    } catch (err) {
+      console.error("Error submitting rating:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography variant="subtitle2" gutterBottom>
-        Rate this product:
-      </Typography>
-      
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <MuiRating
-          value={rating}
-          onChange={handleRatingChange}
-          onChangeActive={(event, newHover) => setHover(newHover)}
-          getLabelText={getLabelText}
-          precision={0.5}
+          value={myRating || averageRating}
+          onChange={handleChange}
+          precision={1}
+          disabled={loading}
         />
-        {/* {averageRating > 0 && (
-          <Typography variant="body2" color="text.secondary">
-            ({averageRating.toFixed(1)} / 5 from {totalRatings} reviews)
-          </Typography>
-        )} */}
-      </Box>
-
-      {hover !== -1 && (
-        <Typography variant="caption" color="text.secondary">
-          {getLabelText(hover)}
+        <Typography variant="body2" color="text.secondary">
+          {averageRating ? averageRating.toFixed(1) : "0.0"} ({totalRatings})
         </Typography>
-      )}
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      </Box>
     </Box>
   );
 };
