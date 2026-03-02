@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   AppBar,
   Toolbar,
@@ -136,10 +136,6 @@ const Navbar = () => {
   const [securityAnswer, setSecurityAnswer] = useState("");
   const [newUserPassword, setNewUserPassword] = useState("");
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
   React.useEffect(() => {
     if (email && sessionStorage.getItem("role") !== "admin") {
       const savedQuestion =
@@ -154,7 +150,7 @@ const Navbar = () => {
   const [notificationAnchor, setNotificationAnchor] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!email || role === "admin") return;
 
     try {
@@ -165,14 +161,15 @@ const Navbar = () => {
     } catch (err) {
       console.error("Failed to fetch notifications:", err);
     }
-  };
+  }, [email, role]);
 
   useEffect(() => {
     fetchNotifications();
-    // Poll for new notifications every 30 seconds
+
     const interval = setInterval(fetchNotifications, 30000);
+
     return () => clearInterval(interval);
-  }, [email, role]);
+  }, [fetchNotifications]);
 
   const handleNotificationClick = (event) => {
     setNotificationAnchor(event.currentTarget);
