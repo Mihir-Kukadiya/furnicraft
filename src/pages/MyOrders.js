@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import Swal from "sweetalert2";
 import axiosInstance from "../utils/axiosInstance";
-import Rating from "./Rating";
+import Rating from "../components/Rating";
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);

@@ -3,7 +3,7 @@ import saleImg from "../images/Products/sale.jpg";
 import axiosInstance from "../utils/axiosInstance";
 import { useTheme } from "@mui/material/styles";
 import { MdEdit } from "react-icons/md";
-import { useFilters } from "./FiltersContext";
+import { useFilters } from "../components/FiltersContext";
 import { Tooltip } from "@mui/material";
 import { Rating } from "@mui/material";
 import {
@@ -28,10 +28,10 @@ import {
 } from "@mui/material";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { Favorite, FavoriteBorder } from "@mui/icons-material";
-import { useFavorites } from "./FavoritesProvider";
+import { useFavorites } from "../components/FavoritesProvider";
 import ProductDetail from "./ProductDetail";
 import { Alert, Snackbar } from "@mui/material";
-import { useCart } from "./CartProvider";
+import { useCart } from "../components/CartProvider";
 
 // ==================== category management =======================
 

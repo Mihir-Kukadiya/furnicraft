@@ -8,7 +8,7 @@ import {
   CardContent,
   Button,
 } from "@mui/material";
-import { useFavorites } from "./FavoritesProvider";
+import { useFavorites } from "../components/FavoritesProvider";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 
 const Favorites = () => {

@@ -20,12 +20,12 @@ import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
 import { MdEdit } from "react-icons/md";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { Dialog, DialogTitle, DialogContent, TextField } from "@mui/material";
-import { useCart } from "./CartProvider";
+import { useCart } from "../components/CartProvider";
 import axiosInstance from "../utils/axiosInstance";
-import { useFavorites } from "./FavoritesProvider";
+import { useFavorites } from "../components/FavoritesProvider";
 import { useTheme } from "@mui/material/styles";
 import ProductDetail from "./ProductDetail";
-import { useFilters } from "./FiltersContext";
+import { useFilters } from "../components/FiltersContext";
 import { Favorite } from "@mui/icons-material";
 
 const ExpensiveProducts = () => {

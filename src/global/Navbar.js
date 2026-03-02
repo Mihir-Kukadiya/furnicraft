@@ -19,10 +19,10 @@ import {
   ListItemIcon,
   Divider,
 } from "@mui/material";
-import { useCart } from "./CartProvider";
+import { useCart } from "../components/CartProvider";
 import axiosInstance from "../utils/axiosInstance";
 import { Snackbar, Alert } from "@mui/material";
-import { useFavorites } from "./FavoritesProvider";
+import { useFavorites } from "../components/FavoritesProvider";
 import Tooltip from "@mui/material/Tooltip";
 import { FaCartShopping } from "react-icons/fa6";
 import { useTheme } from "@mui/material/styles";

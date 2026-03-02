@@ -15,7 +15,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { useCart } from "./CartProvider";
+import { useCart } from "../components/CartProvider";
 
 const Cart = () => {
   const theme = useTheme();

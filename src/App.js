@@ -4,22 +4,22 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 
-import Navbar from "./components/Navbar";
-import Home from "./components/Home";
-import Products from "./components/Products";
-import Cart from "./components/Cart";
-import Favorites from "./components/Favorites";
-import ExpensiveProducts from "./components/ExpensiveProducts";
-import AboutUs from "./components/AboutUs";
-import ContactUs from "./components/ContactUs";
-import Footer from "./components/Footer";
-import Login from "./components/Login";
-import Register from "./components/Register";
-import Address from "./components/Address";
-import Payment from "./components/Payment";
-import Orders from "./components/Orders";
-import CompleteOrders from "./components/completeOrders";
-import MyOrders from "./components/MyOrders";
+import Navbar from "./global/Navbar";
+import Home from "./pages/Home";
+import Products from "./pages/Products";
+import Cart from "./pages/Cart";
+import Favorites from "./pages/Favorites";
+import ExpensiveProducts from "./pages/ExpensiveProducts";
+import AboutUs from "./pages/AboutUs";
+import ContactUs from "./pages/ContactUs";
+import Footer from "./global/Footer";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Address from "./pages/Address";
+import Payment from "./pages/Payment";
+import Orders from "./pages/Orders";
+import CompleteOrders from "./pages/completeOrders";
+import MyOrders from "./pages/MyOrders";
 
 // import BubbleCursor from "./components/BubbleCursos";
 

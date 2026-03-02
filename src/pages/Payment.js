@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import Swal from "sweetalert2";
 import { useTheme } from "@mui/material/styles";
-import { useCart } from "./CartProvider";
+import { useCart } from "../components/CartProvider";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 
