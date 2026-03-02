@@ -15,7 +15,6 @@ import {
 import { Favorite, FavoriteBorder } from "@mui/icons-material";
 import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
-import Rating from "./Rating";
 
 const ProductDetail = ({
   open,

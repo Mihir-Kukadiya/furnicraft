@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -9,11 +9,7 @@ import {
   Chip,
   CardContent,
   TextField,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Swal from "sweetalert2";
 import axiosInstance from "../utils/axiosInstance";
 import Rating from "./Rating";
@@ -23,7 +19,6 @@ const MyOrders = () => {
   const email = sessionStorage.getItem("email");
   const [ratings, setRatings] = useState({});
   const [feedbacks, setFeedbacks] = useState({});
-  const [expandedItems, setExpandedItems] = useState({});
 
   // =================== Fetch user's orders ===================
 

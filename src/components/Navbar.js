@@ -136,6 +136,10 @@ const Navbar = () => {
   const [securityAnswer, setSecurityAnswer] = useState("");
   const [newUserPassword, setNewUserPassword] = useState("");
 
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
   React.useEffect(() => {
     if (email && sessionStorage.getItem("role") !== "admin") {
       const savedQuestion =
@@ -152,7 +156,7 @@ const Navbar = () => {
 
   const fetchNotifications = async () => {
     if (!email || role === "admin") return;
-    
+
     try {
       const res = await axiosInstance.get("/auth/notifications");
       setNotifications(res.data.notifications || []);
@@ -182,7 +186,7 @@ const Navbar = () => {
   const markAsRead = async (notificationId) => {
     try {
       await axiosInstance.put(`/auth/notifications/${notificationId}/read`);
-      setNotifications(notifications.map(n => 
+      setNotifications(notifications.map(n =>
         n._id === notificationId ? { ...n, isRead: true } : n
       ));
       setUnreadCount(prev => Math.max(0, prev - 1));
@@ -574,7 +578,7 @@ const Navbar = () => {
               } catch (err) {
                 setSnackbarMessage(
                   err.response?.data?.message ||
-                    "Failed to update admin profile"
+                  "Failed to update admin profile"
                 );
                 setSnackbarSeverity("error");
                 setOpenSnackbar(true);
@@ -855,8 +859,8 @@ const Navbar = () => {
                         }}
                       >
                         <ListItemIcon>
-                          <CheckCircleIcon 
-                            color={notification.isRead ? "disabled" : "success"} 
+                          <CheckCircleIcon
+                            color={notification.isRead ? "disabled" : "success"}
                             fontSize="small"
                           />
                         </ListItemIcon>
@@ -997,13 +1001,13 @@ const Navbar = () => {
                     Log Out
                   </MenuItem>
                 ) : (
-                    <MenuItem
-                      onClick={() => {
-                        handleCloseMenu();
-                        navigate("/login");
-                      }}
-                    >
-                      Login
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseMenu();
+                      navigate("/login");
+                    }}
+                  >
+                    Login
                   </MenuItem>
                 )}
               </Menu>
