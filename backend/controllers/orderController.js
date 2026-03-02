@@ -1,4 +1,5 @@
 import Order from "../models/Order.js";
+import Auth from "../models/AuthModel.js";
 
 // =========================== Get all Orders ==========================
 
@@ -160,6 +161,31 @@ const updateOrderStatus = async (req, res) => {
       new: true,
       runValidators: true,
     });
+
+    // Create notification for user when order is completed
+    if (status === "Completed") {
+      try {
+        const user = await Auth.findOne({ email: existingOrder.customerEmail });
+        
+        if (user) {
+          const newNotification = {
+            orderId: existingOrder._id,
+            message: `Your order has been completed! Order ID: ${existingOrder._id.toString().slice(-6)}`,
+            type: "order_completed",
+            isRead: false,
+            createdAt: new Date(),
+          };
+
+          user.notifications = user.notifications || [];
+          user.notifications.unshift(newNotification);
+          await user.save();
+          
+          console.log("✅ Notification created for user:", user.email);
+        }
+      } catch (notifErr) {
+        console.error("❌ Failed to create notification:", notifErr);
+      }
+    }
 
     console.log("📦 Updated order:", {
       id: updatedOrder._id,

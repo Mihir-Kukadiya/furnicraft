@@ -1,12 +1,14 @@
 import Product from "../models/Product.js";
 import ExpensiveProduct from "../models/ExpensiveProduct.js";
+import Order from "../models/Order.js";
 
 // =========================== Rate a Product ==========================
 
 export const rateProduct = async (req, res) => {
   try {
-    const { productId, rating, productType } = req.body;
+    const { productId, rating, productType, feedback } = req.body;
     const userId = req.user.id;
+    const userEmail = req.user.email;
 
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({ message: "Rating must be between 1 and 5" });
@@ -31,9 +33,11 @@ export const rateProduct = async (req, res) => {
     if (existingRatingIndex > -1) {
       // Update existing rating
       product.ratings[existingRatingIndex].rating = rating;
+      product.ratings[existingRatingIndex].feedback = feedback;
+      product.ratings[existingRatingIndex].userEmail = userEmail;
     } else {
       // Add new rating
-      product.ratings.push({ userId, rating });
+      product.ratings.push({ userId, userEmail, rating, feedback });
     }
 
     // Calculate average rating
@@ -88,5 +92,116 @@ export const getProductRating = async (req, res) => {
   } catch (err) {
     console.error("Get product rating error:", err);
     res.status(500).json({ message: "Failed to get product rating" });
+  }
+};
+
+// =========================== Submit Feedback ==========================
+
+export const submitFeedback = async (req, res) => {
+  try {
+    const { orderId, itemIndex, feedback } = req.body;
+    const userId = req.user.id;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Check if the user is the customer
+    if (order.customerEmail !== req.user.email) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    if (itemIndex < 0 || itemIndex >= order.items.length) {
+      return res.status(400).json({ message: "Invalid item index" });
+    }
+
+    order.items[itemIndex].feedback = feedback;
+    await order.save();
+
+    // Also update the Product/ExpensiveProduct document
+    const productId = order.items[itemIndex].productId;
+    let product = await Product.findById(productId);
+
+    if (!product) {
+      product = await ExpensiveProduct.findById(productId);
+    }
+
+    if (product) {
+      const existingRatingIndex = product.ratings.findIndex(
+        (r) => r.userId.toString() === userId
+      );
+
+      if (existingRatingIndex > -1) {
+        product.ratings[existingRatingIndex].feedback = feedback;
+        await product.save();
+      }
+    }
+
+    res.json({ message: "Feedback submitted successfully" });
+  } catch (err) {
+    console.error("Submit feedback error:", err);
+    res.status(500).json({ message: "Failed to submit feedback" });
+  }
+};
+
+// =========================== Submit Order Item Rating ==========================
+
+export const submitOrderItemRating = async (req, res) => {
+  try {
+    const { orderId, itemIndex, rating, feedback } = req.body;
+    const userId = req.user.id;
+    const userEmail = req.user.email;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Check if the user is the customer
+    if (order.customerEmail !== req.user.email) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    if (itemIndex < 0 || itemIndex >= order.items.length) {
+      return res.status(400).json({ message: "Invalid item index" });
+    }
+
+    order.items[itemIndex].rating = rating;
+    order.items[itemIndex].feedback = feedback;
+    await order.save();
+
+    // Also update the Product/ExpensiveProduct document
+    const productId = order.items[itemIndex].productId;
+    let product = await Product.findById(productId);
+
+    if (!product) {
+      product = await ExpensiveProduct.findById(productId);
+    }
+
+    if (product) {
+      const existingRatingIndex = product.ratings.findIndex(
+        (r) => r.userId.toString() === userId
+      );
+
+      if (existingRatingIndex > -1) {
+        product.ratings[existingRatingIndex].rating = rating;
+        product.ratings[existingRatingIndex].feedback = feedback;
+        product.ratings[existingRatingIndex].userEmail = userEmail;
+      } else {
+        product.ratings.push({ userId, userEmail, rating, feedback });
+      }
+
+      // Recalculate average rating
+      const total = product.ratings.reduce((acc, curr) => acc + curr.rating, 0);
+      product.averageRating = Math.round((total / product.ratings.length) * 10) / 10;
+
+      await product.save();
+    }
+
+    res.json({ message: "Rating and feedback submitted successfully" });
+  } catch (err) {
+    console.error("Submit order item rating error:", err);
+    res.status(500).json({ message: "Failed to submit rating and feedback" });
   }
 };

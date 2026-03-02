@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Card,
@@ -8,13 +8,22 @@ import {
   Stack,
   Chip,
   CardContent,
+  TextField,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Swal from "sweetalert2";
 import axiosInstance from "../utils/axiosInstance";
+import Rating from "./Rating";
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const email = sessionStorage.getItem("email");
+  const [ratings, setRatings] = useState({});
+  const [feedbacks, setFeedbacks] = useState({});
+  const [expandedItems, setExpandedItems] = useState({});
 
   // =================== Fetch user's orders ===================
 
@@ -59,6 +68,54 @@ const MyOrders = () => {
       Swal.fire("Cancelled!", "Your order has been cancelled.", "success");
     } catch (error) {
       Swal.fire("Error", "Failed to cancel the order.", "error");
+    }
+  };
+
+  // =================== Submit Rating ===================
+
+  const handleRatingChange = (orderId, itemIndex, value) => {
+    setRatings((prev) => ({
+      ...prev,
+      [`${orderId}-${itemIndex}`]: value,
+    }));
+  };
+
+  const handleFeedbackChange = (orderId, itemIndex, value) => {
+    setFeedbacks((prev) => ({
+      ...prev,
+      [`${orderId}-${itemIndex}`]: value,
+    }));
+  };
+
+  const submitRatingAndFeedback = async (orderId, itemIndex, productId) => {
+    const rating = ratings[`${orderId}-${itemIndex}`];
+    const feedback = feedbacks[`${orderId}-${itemIndex}`] || "";
+
+    if (!rating) {
+      Swal.fire("Warning", "Please select a rating before submitting.", "warning");
+      return;
+    }
+
+    try {
+      await axiosInstance.post("/ratings/order-item", {
+        orderId,
+        itemIndex,
+        rating,
+        feedback,
+      });
+
+      Swal.fire("Success!", "Thank you for your feedback!", "success");
+
+      // Refresh orders to show updated rating/feedback
+      const res = await axiosInstance.get("/orders");
+      const myOrders = res.data.filter(
+        (order) =>
+          order.customerEmail?.toLowerCase() === email?.toLowerCase(),
+      );
+      setOrders(myOrders);
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+      Swal.fire("Error", "Failed to submit rating. Please try again.", "error");
     }
   };
 
@@ -175,9 +232,63 @@ const MyOrders = () => {
                       <Typography fontWeight="bold">Items:</Typography>
 
                       {order.items.map((item, i) => (
-                        <Typography key={i} variant="body2">
-                          • {item.name} (x{item.quantity})
-                        </Typography>
+                        <Box key={i} sx={{ mt: 1, mb: 1 }}>
+                          <Typography variant="body2">
+                            • {item.name} (x{item.quantity})
+                          </Typography>
+
+                          {/* Rating Section - Only for Completed Orders */}
+                          {order.status === "Completed" && (
+                            <Box sx={{ mt: 1, ml: 2 }}>
+                              {item.rating ? (
+                                <Box>
+                                  <Typography variant="body2" color="primary">
+                                    You rated this product: {item.rating}/5
+                                  </Typography>
+                                  {item.feedback && (
+                                    <Typography variant="body2" color="text.secondary">
+                                      Feedback: {item.feedback}
+                                    </Typography>
+                                  )}
+                                </Box>
+                              ) : (
+                                <Box>
+                                  <Typography variant="body2" sx={{ mb: 0.5 }}>
+                                    Rate this product:
+                                  </Typography>
+                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                                    <Rating
+                                      productId={item.productId}
+                                      productType={item.price > 100000 ? "expensive" : "regular"}
+                                      value={ratings[`${order._id}-${i}`] || 0}
+                                      onChange={(event, newValue) => {
+                                        handleRatingChange(order._id, i, newValue);
+                                      }}
+                                    />
+                                  </Box>
+                                  <TextField
+                                    label="Feedback (optional)"
+                                    variant="outlined"
+                                    size="small"
+                                    fullWidth
+                                    value={feedbacks[`${order._id}-${i}`] || ""}
+                                    onChange={(e) =>
+                                      handleFeedbackChange(order._id, i, e.target.value)
+                                    }
+                                    sx={{ mb: 1 }}
+                                  />
+                                  <Button
+                                    variant="contained"
+                                    size="small"
+                                    onClick={() => submitRatingAndFeedback(order._id, i, item.productId)}
+                                  >
+                                    Submit Rating
+                                  </Button>
+                                </Box>
+                              )}
+                            </Box>
+                          )}
+                        </Box>
                       ))}
                     </Box>
 
@@ -194,15 +305,16 @@ const MyOrders = () => {
                       </Typography>
                     </Stack>
 
-                    {/* ACTION */}
+                    {/* ACTION - Disable for Completed orders */}
                     <Box textAlign="right" mt={2}>
                       <Button
                         variant="contained"
                         color="error"
                         size="small"
                         onClick={() => deleteOrder(order._id)}
+                        disabled={order.status === "Completed"}
                       >
-                        Cancel Order
+                        {order.status === "Completed" ? "Order Completed" : "Cancel Order"}
                       </Button>
                     </Box>
                   </CardContent>

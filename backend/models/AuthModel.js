@@ -60,6 +60,32 @@ const authSchema = new mongoose.Schema(
       enum: ["admin", "user"],
       default: "user",
     },
+
+    notifications: [
+      {
+        orderId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Order",
+        },
+        message: {
+          type: String,
+          required: true,
+        },
+        type: {
+          type: String,
+          enum: ["order_completed", "order_cancelled", "general"],
+          default: "general",
+        },
+        isRead: {
+          type: Boolean,
+          default: false,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

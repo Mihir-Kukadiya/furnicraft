@@ -181,9 +181,6 @@ const ProductDetail = ({
               >
                 {product.description}
               </Typography>
-
-              {/* Rating Component */}
-              <Rating productId={product._id} productType={productType} />
             </Box>
           </Box>
         </DialogContent>

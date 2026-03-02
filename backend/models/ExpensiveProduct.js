@@ -30,7 +30,9 @@ const expensiveProductSchema = new mongoose.Schema(
     ratings: [
       {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: "Auth" },
+        userEmail: { type: String },
         rating: { type: Number, min: 1, max: 5 },
+        feedback: { type: String },
         createdAt: { type: Date, default: Date.now },
       },
     ],

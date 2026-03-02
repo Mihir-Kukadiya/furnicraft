@@ -21,6 +21,8 @@ const orderSchema = new mongoose.Schema(
         price: { type: Number, required: true },
         quantity: { type: Number, required: true, default: 1 },
         image: { type: String },
+        rating: { type: Number, min: 1, max: 5, default: null },
+        feedback: { type: String, default: "" },
       },
     ],
 

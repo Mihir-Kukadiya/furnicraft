@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -12,6 +12,12 @@ import {
   Avatar,
   Badge,
   TextField,
+  Popover,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Divider,
 } from "@mui/material";
 import { useCart } from "./CartProvider";
 import axiosInstance from "../utils/axiosInstance";
@@ -24,13 +30,13 @@ import { FaHeart } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Drawer from "@mui/material/Drawer";
-import List from "@mui/material/List";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useThemeMode } from "../theme/ThemeContext";
+
 const Navbar = () => {
   // ========================= theme ============================
   const theme = useTheme();
@@ -137,6 +143,78 @@ const Navbar = () => {
       setSecurityQuestion(savedQuestion);
     }
   }, [email]);
+
+  // ===================== Notifications ========================
+
+  const [notifications, setNotifications] = useState([]);
+  const [notificationAnchor, setNotificationAnchor] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchNotifications = async () => {
+    if (!email || role === "admin") return;
+    
+    try {
+      const res = await axiosInstance.get("/auth/notifications");
+      setNotifications(res.data.notifications || []);
+      const unread = (res.data.notifications || []).filter(n => !n.isRead).length;
+      setUnreadCount(unread);
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [email, role]);
+
+  const handleNotificationClick = (event) => {
+    setNotificationAnchor(event.currentTarget);
+    fetchNotifications();
+  };
+
+  const handleCloseNotification = () => {
+    setNotificationAnchor(null);
+  };
+
+  const markAsRead = async (notificationId) => {
+    try {
+      await axiosInstance.put(`/auth/notifications/${notificationId}/read`);
+      setNotifications(notifications.map(n => 
+        n._id === notificationId ? { ...n, isRead: true } : n
+      ));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await axiosInstance.put("/auth/notifications/read-all");
+      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch (err) {
+      console.error("Failed to mark all notifications as read:", err);
+    }
+  };
+
+  const formatNotificationDate = (date) => {
+    const d = new Date(date);
+    const now = new Date();
+    const diffMs = now - d;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return d.toLocaleDateString();
+  };
 
   // ==============================================================
 
@@ -293,10 +371,8 @@ const Navbar = () => {
         </Box>
 
         <Box sx={{ p: 3, display: "flex", flexDirection: "column", gap: 2 }}>
-          {/* Email */}
           <TextField label="Email" value={email} disabled fullWidth />
 
-          {/* Security Question */}
           <TextField
             label="Security Question"
             value={securityQuestion}
@@ -310,7 +386,6 @@ const Navbar = () => {
             }}
           />
 
-          {/* Security Answer */}
           <TextField
             label="Security Answer"
             placeholder="Enter your answer"
@@ -325,7 +400,6 @@ const Navbar = () => {
             }}
           />
 
-          {/* New Password */}
           <TextField
             label="New Password"
             type="password"
@@ -421,7 +495,6 @@ const Navbar = () => {
                 color: theme.palette.primary.main,
                 fontSize: "32px",
                 mb: "16px",
-                height: "80px",
                 width: "80px",
               }}
             >
@@ -703,6 +776,107 @@ const Navbar = () => {
                   </Badge>
                 </IconButton>
               </Tooltip>
+
+              {/* Notification Icon - Only for non-admin users */}
+              {email && role !== "admin" && (
+                <Tooltip title="Notifications">
+                  <IconButton
+                    onClick={handleNotificationClick}
+                    sx={{
+                      color: "inherit",
+                      transition: "0.3s",
+                      "&:hover": {
+                        color: "#ff9800",
+                        transform: "scale(1.2)",
+                      },
+                    }}
+                  >
+                    <Badge
+                      badgeContent={unreadCount}
+                      color="error"
+                      invisible={unreadCount === 0}
+                    >
+                      <NotificationsIcon style={{ fontSize: "22px" }} />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+              )}
+
+              {/* Notification Popover */}
+              <Popover
+                open={Boolean(notificationAnchor)}
+                anchorEl={notificationAnchor}
+                onClose={handleCloseNotification}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "right",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                PaperProps={{
+                  sx: {
+                    width: 320,
+                    maxHeight: 400,
+                    mt: 1,
+                  },
+                }}
+              >
+                <Box sx={{ p: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Typography variant="h6" fontWeight="bold">
+                    Notifications
+                  </Typography>
+                  {unreadCount > 0 && (
+                    <Button size="small" onClick={markAllAsRead}>
+                      Mark all read
+                    </Button>
+                  )}
+                </Box>
+                <Divider />
+                {notifications.length === 0 ? (
+                  <Box sx={{ p: 3, textAlign: "center" }}>
+                    <Typography color="text.secondary">
+                      No notifications yet
+                    </Typography>
+                  </Box>
+                ) : (
+                  <List sx={{ maxHeight: 300, overflow: "auto" }}>
+                    {notifications.slice(0, 10).map((notification) => (
+                      <ListItem
+                        key={notification._id}
+                        onClick={() => markAsRead(notification._id)}
+                        sx={{
+                          bgcolor: notification.isRead ? "transparent" : "action.hover",
+                          cursor: "pointer",
+                          "&:hover": {
+                            bgcolor: "action.selected",
+                          },
+                        }}
+                      >
+                        <ListItemIcon>
+                          <CheckCircleIcon 
+                            color={notification.isRead ? "disabled" : "success"} 
+                            fontSize="small"
+                          />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={notification.message}
+                          secondary={formatNotificationDate(notification.createdAt)}
+                          primaryTypographyProps={{
+                            fontSize: "14px",
+                            fontWeight: notification.isRead ? "normal" : "bold",
+                          }}
+                          secondaryTypographyProps={{
+                            fontSize: "12px",
+                          }}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                )}
+              </Popover>
+
               <Tooltip title="Cart">
                 <IconButton
                   component={Link}
@@ -823,13 +997,13 @@ const Navbar = () => {
                     Log Out
                   </MenuItem>
                 ) : (
-                  <MenuItem
-                    onClick={() => {
-                      handleCloseMenu();
-                      navigate("/login");
-                    }}
-                  >
-                    Login
+                    <MenuItem
+                      onClick={() => {
+                        handleCloseMenu();
+                        navigate("/login");
+                      }}
+                    >
+                      Login
                   </MenuItem>
                 )}
               </Menu>

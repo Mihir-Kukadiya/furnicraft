@@ -165,3 +165,81 @@ export const createAdmin = async (req, res) => {
     res.status(500).json({ message: "Failed to create admin" });
   }
 };
+
+// ===================== Notifications =====================
+
+// Get user notifications
+export const getNotifications = async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    const user = await Auth.findOne({ email: userEmail });
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Sort notifications by createdAt descending (newest first)
+    const notifications = (user.notifications || []).sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    res.json({ notifications });
+  } catch (err) {
+    console.error("Error fetching notifications:", err);
+    res.status(500).json({ message: "Failed to fetch notifications" });
+  }
+};
+
+// Mark a single notification as read
+export const markNotificationAsRead = async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    const { id } = req.params;
+
+    const user = await Auth.findOne({ email: userEmail });
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const notification = user.notifications.id(id);
+    
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+
+    notification.isRead = true;
+    await user.save();
+
+    res.json({ message: "Notification marked as read" });
+  } catch (err) {
+    console.error("Error marking notification as read:", err);
+    res.status(500).json({ message: "Failed to mark notification as read" });
+  }
+};
+
+// Mark all notifications as read
+export const markAllNotificationsAsRead = async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+
+    const user = await Auth.findOne({ email: userEmail });
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Mark all notifications as read
+    if (user.notifications) {
+      user.notifications.forEach(notification => {
+        notification.isRead = true;
+      });
+      await user.save();
+    }
+
+    res.json({ message: "All notifications marked as read" });
+  } catch (err) {
+    console.error("Error marking all notifications as read:", err);
+    res.status(500).json({ message: "Failed to mark all notifications as read" });
+  }
+};
